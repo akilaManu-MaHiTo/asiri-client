@@ -23,19 +23,19 @@ export const userSchema = z.object({
 export type User = z.infer<typeof userSchema>;
 
 export async function validateUser() {
-  const res = await axios.get("/api/user");
+  const res = await axios.get("/api/auth/user");
   return res.data;
 }
 
 export async function login({
-  username,
+  email,
   password,
 }: {
-  username: string;
+  email: string;
   password: string;
 }) {
   const res = await axios.post("/api/auth/login", {
-    username,
+    email,
     password,
   });
   return res.data;

@@ -30,6 +30,8 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import FormatListNumberedOutlinedIcon from '@mui/icons-material/FormatListNumberedOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import MiscellaneousServicesOutlinedIcon from '@mui/icons-material/MiscellaneousServicesOutlined';
+import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
+import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 
 export interface SidebarItem {
   title?: string;
@@ -67,60 +69,66 @@ export const sidebarItems: Array<SidebarItem> = [
     // accessKey: //  PermissionKeys.INSIGHT_VIEW,
   },
   {
-    headline: "Checkout Section",
+    headline: "Daily Sales",
   },
   {
-    title: "Checkout Screen",
+    title: "Daily Report",
     icon: <PointOfSaleOutlinedIcon fontSize="small" />,
-    href: "/admin/organization-settings",
+    href: "/sales/daily-report",
     // accessKey: //  PermissionKeys.ADMIN_USERS_VIEW, // need to add permission key
   },
   {
-    title: "Report Page",
-    icon: <AssessmentOutlinedIcon fontSize="small" />,
-    href: "/admin/users",
-    // accessKey: //  PermissionKeys.ADMIN_USERS_VIEW,
+    title: "Returned Items",
+    icon: <KeyboardReturnOutlinedIcon fontSize="small" />,
+    href: "/sales/returned-items",
+    // accessKey: //  PermissionKeys.ADMIN_USERS_VIEW, // need to add permission key
+  },
+  // {
+  //   title: "Report Page",
+  //   icon: <AssessmentOutlinedIcon fontSize="small" />,
+  //   href: "/admin/users",
+  //   // accessKey: //  PermissionKeys.ADMIN_USERS_VIEW,
+  // },
+  {
+    headline: "Material Summary",
   },
   {
-    headline: "Inventory Setting",
-  },
-  {
-    title: "Add / Edit Inventory",
-    icon: <Inventory2OutlinedIcon fontSize="small" />,
-    href: "/audit-inspection",
+    title: "Material Report",
+    icon: <CategoryOutlinedIcon fontSize="small" />,
+    href: "/material/material-report",
     open: false,
     disabled: false,
   },
-  {
-    title: "Inventory List",
-    href: "/sustainability",
-    icon: <FormatListNumberedOutlinedIcon fontSize="small" />,
-    disabled: false,
-  },
-  {
-    headline: "Admin Section",
-  },
-  {
-    title: "Users Management",
-    href: "/hazard-risk",
-    icon: <PersonOutlineOutlinedIcon fontSize="small" />,
-  },
-  {
-    title: "Role Management",
-    href: "/hazard-risk",
-    icon: <PersonOutlineOutlinedIcon fontSize="small" />,
-  },
-  {
-    title: "App Settings",
-    href: "/accident-incident",
-    icon: <MiscellaneousServicesOutlinedIcon fontSize="small" />,
-  },
-  {
-    title: "Document",
-    href: "/document",
-    icon: <FolderIcon fontSize="small" />,
-    // accessKey: //  PermissionKeys.DOCUMENT_REGISTER_VIEW,
-  },
+  // {
+  //   title: "Inventory List",
+  //   href: "/sustainability",
+  //   icon: <FormatListNumberedOutlinedIcon fontSize="small" />,
+  //   disabled: false,
+  // },
+  // {
+  //   headline: "Admin Section",
+  // },
+  // {
+  //   title: "Users Management",
+  //   href: "/hazard-risk",
+  //   icon: <PersonOutlineOutlinedIcon fontSize="small" />,
+  // },
+  // {
+  //   title: "Role Management",
+  //   href: "/hazard-risk",
+  //   icon: <PersonOutlineOutlinedIcon fontSize="small" />,
+  // },
+  // {
+  //   title: "App Settings",
+  //   href: "/accident-incident",
+  //   icon: <MiscellaneousServicesOutlinedIcon fontSize="small" />,
+  // },
+  // {
+  //   title: "Document",
+  //   href: "/document",
+  //   icon: <FolderIcon fontSize="small" />,
+  //   // accessKey: //  PermissionKeys.DOCUMENT_REGISTER_VIEW,
+  // },
   // {
   //   title: "Equipment MNG",
   //   href: "/equipment-mng",

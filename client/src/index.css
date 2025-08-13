@@ -1,9 +1,12 @@
 /* root styles */
 :root {
-  --primary-color: #101724;
-  --primary-light: #12AB68;
-  --text-color: #1E293B;
-  --text-light: #64748B;
+  --primary-color: #ffffff;
+  --primary-light: #090c20;
+  --text-color: #000000;
+  --text-light: #000000;
+  --button-color: #090c20;
+  --secondary-color: #d32f2f;
+  --app-headers: #d32f2f63;
 }
 
 /* Global Styles */
@@ -130,22 +133,22 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #b5bcce;
+  background: #d32f2f;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #7db0ff;
+  background: #d32f2f;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b5bcce;
+  background: #d32f2f;
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #7db0ff transparent;
+  scrollbar-color: #d32f2f transparent;
 }
 
 /* Fallback for IE */

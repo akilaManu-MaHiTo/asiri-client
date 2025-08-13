@@ -10,7 +10,7 @@ export default function PageLoader() {
       }}
       open={true}
     >
-      <CircularProgress color="info" size={"3rem"} />
+      <CircularProgress color="error" size={"3rem"} />
     </Backdrop>
   );
 }
