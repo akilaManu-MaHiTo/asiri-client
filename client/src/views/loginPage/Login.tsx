@@ -5,26 +5,26 @@ import {
   Container,
   TextField,
   Typography,
-  Paper,
-  Stack,
+  createTheme,
 } from "@mui/material";
+import Logo from "../../assets/asiri-logo.png";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { login } from "../../api/userApi";
 import queryClient from "../../state/queryClient";
 import { enqueueSnackbar } from "notistack";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import PageLoader from "../../components/PageLoader";
-import groupLogo from "../../assets/react.svg";
-import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
+import useIsMobile from "../../customHooks/useIsMobile";
 
 type FormData = {
-  username: string;
+  email: string;
   password: string;
 };
 
-const LoginPage: React.FC = () => {
+const LoginPage = () => {
+  const { isMobile, isTablet } = useIsMobile();
   const {
     register,
     handleSubmit,
@@ -48,140 +48,115 @@ const LoginPage: React.FC = () => {
 
   const onSubmit = (data: FormData) => {
     console.log("Login submitted:", data);
-    loginMutation({ username: data.username, password: data.password });
+    loginMutation({ email: data.email, password: data.password });
   };
 
   const { user, status } = useCurrentUser();
   if (status === "loading" || status === "idle" || status === "pending") {
     return <PageLoader />;
   }
-
   if (user) {
-    window.location.reload();
     navigate("/home");
   }
   return (
-    <Box
+    <Container
+      component="main"
+      maxWidth="xs"
       sx={{
         minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        background: "radial-gradient(circle, #12AB68 20%, #101724 100%)",
       }}
     >
-      <Container
-        maxWidth="xs"
+      <Box
         sx={{
-          backgroundColor: "var(--primary-color)",
-          borderRadius: 5,
+          marginTop: 0,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        <Stack sx={{ padding: 4 }} gap={3}>
-          <Box display="flex" alignItems="center" justifyContent="center">
-            <img src={groupLogo} alt="logo" height="45em" />
-            <Typography
-              variant="subtitle1"
-              noWrap
-              component="div"
-              sx={{ color: "var(--primary-light)" }}
-            >
-              GroceryFlow
-            </Typography>
-          </Box>
-          <Typography
-            variant="h4"
-            align="center"
-            gutterBottom
-            mt={1}
+        <Box
+          display="flex"
+          alignItems="center"
+          flexDirection={isMobile ? "column" : "row"}
+          gap={isMobile ? 3  : ""}
+        >
+          <img src={Logo} alt="logo" height="60em" />
+          <Typography ml={2} variant="h4" noWrap component="div">
+            Asiri Mushrooms
+          </Typography>
+        </Box>
+
+        <Box
+          component="form"
+          noValidate
+          sx={{ mt: 3 }}
+          onSubmit={handleSubmit(onSubmit)}
+        >
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoFocus
+            color="secondary"
+            {...register("email", { required: "Email is required" })}
+            error={!!errors.email}
+            helperText={errors.email?.message}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            color="secondary"
+            {...register("password", { required: "Password is required" })}
+            error={!!errors.password}
+            helperText={errors.password?.message}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
             sx={{
-              color: "white",
+              mt: 3,
+              mb: 2,
+              py: 1.5,
+              backgroundColor: "primary.main",
+              "&:hover": {
+                backgroundColor: "#b71c1c",
+              },
             }}
           >
-            Login
-          </Typography>
-          <Stack
-            gap={3}
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-            noValidate
-          >
-            <TextField
-              label="User Name"
-              variant="outlined"
-              size="small"
-              type="text"
-              fullWidth
-              margin="normal"
-              {...register("username", { required: "User Name is required" })}
-              error={!!errors.username}
-              helperText={errors.username?.message}
-              sx={{
-                "& label": {
-                  color: "000",
-                },
-                "& label.Mui-focused": {
-                  color: "var(--primary-light)",
-                },
-                "& .MuiOutlinedInput-root": {
-                  backgroundColor: "white",
-                  "&.Mui-focused fieldset": {
-                    borderColor: "var(--primary-light)",
-                  },
-                },
-              }}
-            />
-            <TextField
-              label="Password"
-              type="password"
-              size="small"
-              fullWidth
-              margin="normal"
-              variant="outlined"
-              {...register("password", { required: "Password is required" })}
-              error={!!errors.password}
-              helperText={errors.password?.message}
-              sx={{
-                "& label": {
-                  color: "000",
-                },
-                "& label.Mui-focused": {
-                  color: "var(--primary-light)",
-                },
-                "& .MuiOutlinedInput-root": {
-                  backgroundColor: "white",
-                  "&.Mui-focused fieldset": {
-                    borderColor: "var(--primary-light)",
-                  },
-                },
-              }}
-            />
+            Log In
+          </Button>
 
-            <a
-              href="#"
-              style={{
-                display: "block",
-                textAlign: "center",
-                marginTop: "1rem",
-                color: "gray",
+          <Box sx={{ textAlign: "center", mt: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                color: "primary.main",
+                cursor: "pointer",
+                mt: 1,
+                "&:hover": {
+                  textDecoration: "underline",
+                },
               }}
             >
-              Forgot Password ?
-            </a>
-            <Box display="flex" justifyContent="center" my={4}>
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{ backgroundColor: "var(--primary-light)", width: "50%" }}
-                endIcon={<LoginOutlinedIcon />}
-              >
-                Login
-              </Button>
-            </Box>
-          </Stack>
-        </Stack>
-      </Container>
-    </Box>
+              Forgot password?
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 

@@ -46,7 +46,7 @@ import { useQuery } from "@tanstack/react-query";
 
 // import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
 
-import groupLogo from "../../assets/react.svg";
+import groupLogo from "../../assets/asiri-logo.png";
 const drawerWidth = 265;
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -183,7 +183,7 @@ export default function MainLayout({ children }: Props) {
                 edge="start"
                 sx={[
                   {
-                    color: "#024271",
+                    color: "var(--text-color)",
                     marginRight: 3,
                   },
                   open && !isMobile && { display: "none" },
@@ -191,6 +191,14 @@ export default function MainLayout({ children }: Props) {
               >
                 <MenuIcon />
               </IconButton>
+              <Box>
+                <img
+                  src={groupLogo}
+                  alt="logo"
+                  height={"35em"}
+                  style={{ marginTop: "5px" }}
+                />
+              </Box>
             </Box>
             {!isMobile && (
               <Box
@@ -293,7 +301,7 @@ export default function MainLayout({ children }: Props) {
           }}
           PaperProps={{
             sx: {
-              backgroundColor: "#010f24",
+              backgroundColor: "var(--primary-color)",
               color: "#fff",
               elevation: 2,
             },
@@ -319,7 +327,6 @@ export default function MainLayout({ children }: Props) {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
         {children}
-        <DrawerFooter />
       </Box>
     </Box>
   );
@@ -339,35 +346,34 @@ const DrawerContent = ({
   return (
     <>
       <DrawerHeader sx={{ justifyContent: "flex-start" }}>
-        <Box display="flex" alignItems="center" pr={1}>
-          <img src={groupLogo} alt="logo" height="35em" />
-          <Typography
-            variant="subtitle1"
-            noWrap
-            component="div"
-            sx={{ color: "var(--primary-light)" }}
-          >
-            GroceryFlow
-          </Typography>
-        </Box>
-
         <IconButton onClick={handleDrawerClose}>
           {theme.direction === "rtl" ? (
-            <MenuIcon
+            <ChevronLeftIcon
               sx={{
-                color: "#fff",
+                color: "var(--primary-light)",
               }}
             />
           ) : (
-            <MenuIcon
+            <ChevronLeftIcon
               sx={{
-                color: "#fff",
+                color: "var(--primary-light)",
               }}
             />
           )}
         </IconButton>
+
+        <Typography
+          variant="subtitle1"
+          noWrap
+          component="div"
+          sx={{ color: "var(--primary-light)" }}
+        >
+          Asiri Mushrooms
+        </Typography>
       </DrawerHeader>
-      <Divider sx={{ marginBottom: "1rem", backgroundColor: "#7db0ff" }} />
+      <Divider
+        sx={{ marginBottom: "1rem", backgroundColor: "var(--secondary-color)" }}
+      />
       <Box
         sx={{
           height: "calc(100vh - 75px)",
@@ -526,7 +532,7 @@ const NestedItem = React.memo(
             style={{
               marginRight: "0.5rem",
               marginBottom: -4,
-              color: item.disabled ? "grey" : "#fff",
+              color: "#000",
             }}
           >
             {item.icon}
@@ -535,7 +541,7 @@ const NestedItem = React.memo(
             variant="body2"
             sx={{
               textTransform: "capitalize",
-              color: item.disabled ? "grey" : "#fff",
+              color: "#000",
             }}
           >
             {item.title}
@@ -609,7 +615,7 @@ export const LinkButton = React.memo(
             fontSize: "0.8rem",
             paddingY: "0.2rem",
             alignItems: "center",
-            borderLeft: isMatch ? "4px solid var(--primary-light)" : "none",
+            borderLeft: isMatch ? "4px solid var(--secondary-color)" : "none",
           }}
           disabled={disabled}
         >
@@ -620,8 +626,8 @@ export const LinkButton = React.memo(
               color: disabled
                 ? "grey"
                 : isMatch
-                ? "var(--primary-light)"
-                : "#fff",
+                ? "var(--secondary-color)"
+                : "#000000b9",
             }}
           >
             {icon}
@@ -634,7 +640,7 @@ export const LinkButton = React.memo(
                 ? "grey"
                 : isMatch
                 ? "var(--primary-light)"
-                : "#fff",
+                : "#000000b9",
             }}
           >
             {title}
@@ -644,27 +650,3 @@ export const LinkButton = React.memo(
     );
   }
 );
-
-const DrawerFooter = () => {
-  return (
-    <Box
-      sx={{
-        width: "100%",
-        py: 0.2,
-        px: 2,
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        backgroundColor: "#f5f5f5",
-        borderTop: "1px solid #ddd",
-        display: "flex",
-        justifyContent: "flex-end",
-        alignItems: "center",
-      }}
-    >
-      <Typography variant="caption" color="text.secondary">
-        AppVersion - 0.0.1
-      </Typography>
-    </Box>
-  );
-};
