@@ -6,6 +6,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Box,
   Button,
@@ -29,25 +32,32 @@ import { useSnackbar } from "notistack";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import queryClient from "../../state/queryClient";
 import {
-  createAccident,
   createPackets,
-  deleteAccident,
-  getAccidentsApprovedTaskList,
-  getAccidentsAssignedTaskList,
-  getAccidentsList,
+  deletePacket,
+  getDailyPacketReport,
+  getDailyPacketTotal,
+  getMonthlyPacketReport,
+  getMonthlyPacketTotal,
   getPacketList,
+  getPacketTotal,
   Sales,
-  updateAccident,
+  updatePacket,
 } from "../../api/salesApi";
-// import useCurrentUserHaveAccess from "../../hooks/useCurrentUserHaveAccess";
-// import { PermissionKeys } from "../Administration/SectionList";
 import AddOrEditSalesReportDialog from "./AddOrEditSalesReportDialog";
-function AccidentTable({
-  isAssignedTasks,
-  isApprovedTasks,
+import { dateFormatter } from "../../util/dateFormat.util";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Controller, useForm } from "react-hook-form";
+import DatePickerComponent from "../../components/DatePickerComponent";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import { generateMonthlySalesPDF } from "../../util/pdfGenerator";
+import ViewSalesReportContent from "./ViewSalesReportContent";
+
+function DailyReportTable({
+  isDailyReport,
+  isMonthlyReport,
 }: {
-  isAssignedTasks: boolean;
-  isApprovedTasks: boolean;
+  isDailyReport: boolean;
+  isMonthlyReport: boolean;
 }) {
   const { enqueueSnackbar } = useSnackbar();
   const [openViewDrawer, setOpenViewDrawer] = useState(false);
@@ -57,8 +67,14 @@ function AccidentTable({
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const {
+    register,
+    watch,
+    reset,
+    control,
+    formState: { errors },
+  } = useForm();
 
-  // handle pagination
   const handleChangePage = (
     event: React.MouseEvent<HTMLButtonElement> | null,
     newPage: number
@@ -77,37 +93,55 @@ function AccidentTable({
     { title: "Home", href: "/home" },
     {
       title: `${
-        isAssignedTasks ? "Assigned " : isApprovedTasks ? " Approved " : ""
-      }Daily Sales Management`,
+        isDailyReport ? "Daily " : isMonthlyReport ? " Monthly " : ""
+      }Sales Management`,
     },
   ];
 
-  const { data: accidentData, isFetching: isAccidentDataFetching } = useQuery({
+  let beforeFormatDate = watch("date") || new Date();
+  beforeFormatDate = new Date(beforeFormatDate);
+  const formattedDate = dateFormatter(beforeFormatDate);
+
+  //packet details
+  const { data: packetData, isFetching: isPacketDataFetching } = useQuery({
     queryKey: ["packets"],
     queryFn: getPacketList,
   });
 
-  const {
-    data: accidentAssignedTaskData,
-    isFetching: isAccidentAssignedTaskData,
-  } = useQuery({
-    queryKey: ["accidents-assigned-task"],
-    queryFn: getAccidentsAssignedTaskList,
+  const { data: dailyPacketData, isFetching: isPacketAssignedTaskData } =
+    useQuery({
+      queryKey: ["packet-daily-sales", formattedDate],
+      queryFn: () => getDailyPacketReport(formattedDate),
+    });
+
+  const { data: monthlyPacketData, isFetching: isPacketApprovedTaskData } =
+    useQuery({
+      queryKey: ["packet-monthly-sales", formattedDate],
+      queryFn: () => getMonthlyPacketReport(formattedDate),
+    });
+
+  //packet total details
+  const { data: packetTotalData } = useQuery({
+    queryKey: ["packet-total"],
+    queryFn: getPacketTotal,
   });
 
-  const {
-    data: accidentApprovedTaskData,
-    isFetching: isAccidentApprovedTaskData,
-  } = useQuery({
-    queryKey: ["accidents-approved-task"],
-    queryFn: getAccidentsApprovedTaskList,
+  const { data: dailyPacketTotalData } = useQuery({
+    queryKey: ["daily-packet-total", formattedDate],
+    queryFn: () => getDailyPacketTotal(formattedDate),
+  });
+
+  const { data: monthlyPacketTotalData } = useQuery({
+    queryKey: ["monthly-packet-total", formattedDate],
+    queryFn: () => getMonthlyPacketTotal(formattedDate),
   });
 
   const isMobile = useMediaQuery((theme: Theme) =>
     theme.breakpoints.down("md")
   );
 
-  const { mutate: createAccidentMutation, isPending: isAccidentCreating } =
+  //create packet
+  const { mutate: createPacketMutation, isPending: isPacketCreating } =
     useMutation({
       mutationFn: createPackets,
       onSuccess: () => {
@@ -116,7 +150,19 @@ function AccidentTable({
         setOpenAddOrEditDialog(false);
         queryClient.invalidateQueries({ queryKey: ["packets"] });
         queryClient.invalidateQueries({
-          queryKey: ["accidents-assigned-task"],
+          queryKey: ["daily-packet-total", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["monthly-packet-total", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-monthly-sales", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-daily-sales", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-total"],
         });
         enqueueSnackbar("Daily Sales Report Created Successfully!", {
           variant: "success",
@@ -129,83 +175,149 @@ function AccidentTable({
       },
     });
 
-  const { mutate: updateAccidentMutation, isPending: isAccidentUpdating } =
+  //update packet
+  const { mutate: updatePacketMutation, isPending: isPacketUpdating } =
     useMutation({
-      mutationFn: updateAccident,
+      mutationFn: updatePacket,
       onSuccess: () => {
         setSelectedRow(null);
         setOpenViewDrawer(false);
         setOpenAddOrEditDialog(false);
-        queryClient.invalidateQueries({ queryKey: ["accidents"] });
+        queryClient.invalidateQueries({ queryKey: ["packets"] });
         queryClient.invalidateQueries({
-          queryKey: ["accidents-assigned-task"],
+          queryKey: ["daily-packet-total", formattedDate],
         });
-        enqueueSnackbar("Accident Report Updated Successfully!", {
+        queryClient.invalidateQueries({
+          queryKey: ["monthly-packet-total", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-monthly-sales", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-daily-sales", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-total"],
+        });
+        enqueueSnackbar("Daily Sales Report Update Successfully!", {
           variant: "success",
         });
       },
       onError: () => {
-        enqueueSnackbar(`Accident Update Failed`, {
+        enqueueSnackbar(`Daily Sales Report Update Failed`, {
           variant: "error",
         });
       },
     });
 
-  const { mutate: deleteAccidentMutation } = useMutation({
-    mutationFn: deleteAccident,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["accidents"] });
-      await queryClient.invalidateQueries({
-        queryKey: ["accidents-assigned-task"],
-      });
-      setOpenViewDrawer(false);
+  //delete packet
+  const { mutate: deletePacketMutation } = useMutation({
+    mutationFn: deletePacket,
+    onSuccess: () => {
       setSelectedRow(null);
-      enqueueSnackbar("Accident Report Deleted Successfully!", {
+      setOpenViewDrawer(false);
+      setOpenAddOrEditDialog(false);
+      queryClient.invalidateQueries({ queryKey: ["packets"] });
+      queryClient.invalidateQueries({
+        queryKey: ["daily-packet-total", formattedDate],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["monthly-packet-total", formattedDate],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["packet-monthly-sales", formattedDate],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["packet-daily-sales", formattedDate],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["packet-total"],
+      });
+      enqueueSnackbar("Daily Sales Report Delete Successfully!", {
         variant: "success",
       });
     },
     onError: () => {
-      enqueueSnackbar(`Accident Delete Failed`, {
+      enqueueSnackbar(`Daily Sales Report Delete Failed`, {
         variant: "error",
       });
     },
   });
 
-  const paginatedAccidentData = useMemo(() => {
-    if (isAssignedTasks) {
-      if (!accidentAssignedTaskData) return [];
+  const allTotal = useMemo(() => {
+    if (isDailyReport) {
+      if (!dailyPacketTotalData) return null;
+      return {
+        totalPackets: dailyPacketTotalData.totalPackets,
+        returnPackets: dailyPacketTotalData.returnPackets,
+        totalPrice: dailyPacketTotalData.totalPrice,
+        totalReturnPrice: dailyPacketTotalData.totalReturnPrice,
+        subTotal: dailyPacketTotalData.subTotal,
+      };
+    } else if (isMonthlyReport) {
+      if (!monthlyPacketTotalData) return null;
+      return {
+        totalPackets: monthlyPacketTotalData.totalPackets,
+        returnPackets: monthlyPacketTotalData.returnPackets,
+        totalPrice: monthlyPacketTotalData.totalPrice,
+        totalReturnPrice: monthlyPacketTotalData.totalReturnPrice,
+        subTotal: monthlyPacketTotalData.subTotal,
+      };
+    } else {
+      if (!packetTotalData) return null;
+      return {
+        totalPackets: packetTotalData.totalPackets,
+        returnPackets: packetTotalData.returnPackets,
+        totalPrice: packetTotalData.totalPrice,
+        totalReturnPrice: packetTotalData.totalReturnPrice,
+        subTotal: packetTotalData.subTotal,
+      };
+    }
+  }, [
+    packetTotalData,
+    monthlyPacketTotalData,
+    dailyPacketTotalData,
+    isDailyReport,
+    isMonthlyReport,
+  ]);
+
+  const paginatedPacketData = useMemo(() => {
+    if (isDailyReport) {
+      if (!dailyPacketData) return [];
       if (rowsPerPage === -1) {
-        return accidentAssignedTaskData; // If 'All' is selected, return all data
+        return dailyPacketData;
       }
-      return accidentAssignedTaskData.slice(
+      return dailyPacketData.slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       );
-    } else if (isApprovedTasks) {
-      if (!accidentApprovedTaskData) return [];
+    } else if (isMonthlyReport) {
+      if (!monthlyPacketData) return [];
       if (rowsPerPage === -1) {
-        return accidentApprovedTaskData; // If 'All' is selected, return all data
+        return monthlyPacketData;
       }
-      return accidentApprovedTaskData.slice(
+      return monthlyPacketData.slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       );
     } else {
-      if (!accidentData) return [];
+      if (!packetData) return [];
       if (rowsPerPage === -1) {
-        return accidentData; // If 'All' is selected, return all data
+        return packetData;
       }
-      return accidentData.slice(
+      return packetData.slice(
         page * rowsPerPage,
         page * rowsPerPage + rowsPerPage
       );
     }
   }, [
-    accidentData as any,
+    packetData,
     page,
     rowsPerPage,
-    accidentAssignedTaskData,
-    isAssignedTasks,
+    dailyPacketData,
+    monthlyPacketData,
+    isDailyReport,
+    isMonthlyReport,
   ]);
 
   return (
@@ -220,10 +332,107 @@ function AccidentTable({
         }}
       >
         <PageTitle
-          title={`${isAssignedTasks ? "Assigned " : ""}Daily Sales Management`}
+          title={`${
+            isDailyReport ? "Daily " : isMonthlyReport ? "Monthly " : ""
+          }Sales Management`}
         />
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
+      {(isDailyReport || isMonthlyReport) && (
+        <Accordion sx={{ marginBottom: 2, borderRadius: 1 }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1-content"
+            id="panel1-header"
+            sx={{
+              borderBottom: "1px solid var(--pallet-lighter-grey)",
+            }}
+          >
+            <Typography variant="subtitle2">Select Filters</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box width={isMobile ? "100%" : "25%"}>
+              <Controller
+                control={control}
+                {...register("date", { required: true })}
+                name={"date"}
+                render={({ field }) => {
+                  return (
+                    <DatePickerComponent
+                      onChange={(e) => field.onChange(e)}
+                      value={field.value ? new Date(field.value) : undefined}
+                      error={errors?.date ? "Required" : ""}
+                      disablePast={false}
+                      disableFuture={true}
+                    />
+                  );
+                }}
+              />
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                onClick={() => {
+                  reset();
+                }}
+                sx={{ color: "var(--button-color)", marginRight: "0.5rem" }}
+              >
+                Reset
+              </Button>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      )}
+      <Box
+        sx={{
+          padding: theme.spacing(2),
+          boxShadow: 2,
+          marginBottom: 2,
+          borderRadius: 1,
+          overflowX: "hidden",
+        }}
+      >
+        <Stack display={"flex"} flexDirection={isMobile ? "column" : "row"}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">
+              Total Packets:{" "}
+              <Box component="span" sx={{ fontSize: "1rem" }}>
+                {allTotal?.totalPackets}
+              </Box>
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">
+              Total Return Packets:{" "}
+              <Box component="span" sx={{ fontSize: "1rem" }}>
+                {allTotal?.returnPackets}
+              </Box>
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">
+              Total Return Price:{" "}
+              <Box component="span" sx={{ fontSize: "1rem" }}>
+                {allTotal?.totalReturnPrice}
+              </Box>
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">
+              Sub Total Price:{" "}
+              <Box component="span" sx={{ fontSize: "1rem" }}>
+                {allTotal?.subTotal}
+              </Box>
+            </Typography>
+          </Box>
+        </Stack>
+      </Box>
+
       <Stack sx={{ alignItems: "center" }}>
         <TableContainer
           component={Paper}
@@ -233,14 +442,41 @@ function AccidentTable({
             maxWidth: isMobile ? "88vw" : "100%",
           }}
         >
-          <Box
-            sx={{
-              padding: theme.spacing(2),
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
+          <Stack
+            flexDirection={isMobile ? "column" : "row"}
+            sx={{ alignItems: "center", justifyContent: "flex-end" }}
           >
-            {!isApprovedTasks && (
+            <Box
+              sx={{
+                padding: theme.spacing(2),
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: "var(--app-headers)" }}
+                startIcon={<DownloadOutlinedIcon />}
+                onClick={() =>
+                  generateMonthlySalesPDF(
+                    isDailyReport
+                      ? dailyPacketData
+                      : isMonthlyReport
+                      ? monthlyPacketData
+                      : packetData
+                  )
+                }
+              >
+                Report Download
+              </Button>
+            </Box>
+            <Box
+              sx={{
+                padding: theme.spacing(2),
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
               <Button
                 variant="contained"
                 sx={{ backgroundColor: "var(--button-color)" }}
@@ -250,29 +486,32 @@ function AccidentTable({
                   setOpenAddOrEditDialog(true);
                 }}
               >
-                Daily Report
+                Add Sales Report
               </Button>
-            )}
-          </Box>
-          {(isAccidentDataFetching ||
-            isAccidentAssignedTaskData ||
-            isAccidentApprovedTaskData) && (
-            <LinearProgress sx={{ width: "100%",color: "var(--secondary-color)" }} />
+            </Box>
+          </Stack>
+
+          {(isPacketDataFetching ||
+            isPacketAssignedTaskData ||
+            isPacketApprovedTaskData) && (
+            <LinearProgress
+              sx={{ width: "100%", color: "var(--secondary-color)" }}
+            />
           )}
           <Table aria-label="simple table">
             <TableHead sx={{ backgroundColor: "var(--app-headers)" }}>
               <TableRow>
-                <TableCell>Reference</TableCell>
-                <TableCell>Date</TableCell>
+                <TableCell align="center">Date</TableCell>
                 <TableCell align="right">No Of Packets</TableCell>
+                <TableCell align="right">No Of Returns</TableCell>
                 <TableCell align="right">Unit Price</TableCell>
                 <TableCell align="right">Market Name</TableCell>
-                <TableCell align="right">Total Price</TableCell>
+                <TableCell align="right">Sub Total Price</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedAccidentData?.length > 0 ? (
-                paginatedAccidentData?.map((row) => (
+              {paginatedPacketData?.length > 0 ? (
+                paginatedPacketData?.map((row) => (
                   <TableRow
                     key={`${row._id}`}
                     sx={{
@@ -284,14 +523,16 @@ function AccidentTable({
                       setOpenViewDrawer(true);
                     }}
                   >
-                    <TableCell component="th" scope="row">
-                      {row._id}
+                    <TableCell align="center">
+                      {format(row.date, "yyyy-MM-dd")}
                     </TableCell>
-                    <TableCell>{format(row.date, "yyyy-MM-dd")}</TableCell>
                     <TableCell align="right">{row.noOfPackets}</TableCell>
+                    <TableCell align="right">{row.noOfReturnPackets}</TableCell>
                     <TableCell align="right">{row.unitPrice}</TableCell>
                     <TableCell align="right">{row.marketName}</TableCell>
-                    <TableCell align="right">{row.totalPrice}</TableCell>
+                    <TableCell align="right">
+                      {row.totalPrice - row.totalReturnPrice}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
@@ -308,9 +549,11 @@ function AccidentTable({
                   rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
                   colSpan={100}
                   count={
-                    isAssignedTasks
-                      ? accidentAssignedTaskData?.length
-                      : accidentData?.length
+                    isDailyReport
+                      ? dailyPacketData?.length
+                      : isMonthlyReport
+                      ? monthlyPacketData
+                      : packetData?.length
                   }
                   rowsPerPage={rowsPerPage}
                   page={page}
@@ -340,14 +583,14 @@ function AccidentTable({
               onDelete={() => setDeleteDialogOpen(true)}
             />
 
-            {/* {selectedRow && (
+            {selectedRow && (
               <Stack>
-                <ViewAccidentContent
-                  accident={selectedRow}
+                <ViewSalesReportContent
+                  dailySales={selectedRow}
                   handleCloseDrawer={() => setOpenViewDrawer(false)}
                 />
               </Stack>
-            )} */}
+            )}
           </Stack>
         }
       />
@@ -361,22 +604,22 @@ function AccidentTable({
           }}
           onSubmit={(data) => {
             if (selectedRow) {
-              updateAccidentMutation(data);
+              updatePacketMutation(data);
             } else {
-              createAccidentMutation(data);
+              createPacketMutation(data);
             }
           }}
           defaultValues={selectedRow}
-          isLoading={isAccidentCreating || isAccidentUpdating}
+          isLoading={isPacketCreating || isPacketUpdating}
         />
       )}
       {deleteDialogOpen && (
         <DeleteConfirmationModal
           open={deleteDialogOpen}
-          title="Remove Accident Confirmation"
+          title="Remove Sales Report Confirmation"
           content={
             <>
-              Are you sure you want to remove this accident?
+              Are you sure you want to remove this Sales Report?
               <Alert severity="warning" style={{ marginTop: "1rem" }}>
                 This action is not reversible.
               </Alert>
@@ -384,15 +627,12 @@ function AccidentTable({
           }
           handleClose={() => setDeleteDialogOpen(false)}
           deleteFunc={async () => {
-            deleteAccidentMutation(selectedRow.id);
+            deletePacketMutation(selectedRow._id);
           }}
           onSuccess={() => {
             setOpenViewDrawer(false);
             setSelectedRow(null);
             setDeleteDialogOpen(false);
-            // enqueueSnackbar("Accident Deleted Successfully!", {
-            //   variant: "success",
-            // });
           }}
           handleReject={() => {
             setOpenViewDrawer(false);
@@ -405,4 +645,4 @@ function AccidentTable({
   );
 }
 
-export default AccidentTable;
+export default DailyReportTable;

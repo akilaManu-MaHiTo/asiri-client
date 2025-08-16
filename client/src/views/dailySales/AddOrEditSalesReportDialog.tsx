@@ -23,13 +23,17 @@ import CloseIcon from "@mui/icons-material/Close";
 import { grey } from "@mui/material/colors";
 import DatePickerComponent from "../../components/DatePickerComponent";
 import CustomButton from "../../components/CustomButton";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import { format } from "date-fns";
 import { enqueueSnackbar } from "notistack";
 import queryClient from "../../state/queryClient";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
-import { GROUPNO, MarketNames, Sales } from "../../api/salesApi";
+import { Sales } from "../../api/salesApi";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createMarket, getMarketlist, Market } from "../../api/marketApi";
+import { createGroup, getGrouplist, Group } from "../../api/groupApi";
+import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
 
 type DialogProps = {
   open: boolean;
@@ -78,6 +82,7 @@ export default function AddOrEditSalesReportDialog({
 }: DialogProps) {
   const { isMobile, isTablet } = useIsMobile();
   const [addNewContactDialogOpen, setAddNewContactDialogOpen] = useState(false);
+  const [addNewContactGroupDialogOpen, setAddNewContactGroupDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -98,7 +103,14 @@ export default function AddOrEditSalesReportDialog({
   });
 
   const marketName = watch("marketName");
-
+  const { data: marketData } = useQuery({
+    queryKey: ["market"],
+    queryFn: getMarketlist,
+  });
+  const { data: groupData } = useQuery({
+    queryKey: ["group"],
+    queryFn: getGrouplist,
+  });
   useEffect(() => {
     if (defaultValues) {
       reset(defaultValues);
@@ -144,27 +156,55 @@ export default function AddOrEditSalesReportDialog({
     </li>
   );
 
+  const AddNewGroupNoButton = (props) => (
+    <li
+      {...props}
+      variant="contained"
+      style={{
+        backgroundColor: "var(--app-headers)",
+        textTransform: "none",
+        margin: "0.5rem",
+        borderRadius: "0.3rem",
+        display: "flex",
+        flexDirection: "row",
+      }}
+      size="small"
+      onMouseDown={() => {
+        setAddNewContactGroupDialogOpen(true);
+      }}
+    >
+      <AddIcon sx={{ color: "var(--text-color)" }} />
+      <Typography
+        variant="body2"
+        component="div"
+        sx={{ color: "var(--text-color)" }}
+      >
+        Add New Group Number
+      </Typography>
+    </li>
+  );
+
   const AddNewObservationTypeDialog = () => {
-    const { register, handleSubmit } = useForm<Sales>();
+    const { register, handleSubmit } = useForm<Market>();
 
-    // const { mutate: createObservationTypeMutation } = useMutation({
-    //   mutationFn: createObservationType,
-    //   onSuccess: () => {
-    //     queryClient.invalidateQueries({ queryKey: ["observationType"] });
-    //     enqueueSnackbar("Observation Type Created Successfully!", {
-    //       variant: "success",
-    //     });
-    //   },
-    //   onError: () => {
-    //     enqueueSnackbar(`Observation Type Creation Failed`, {
-    //       variant: "error",
-    //     });
-    //   },
-    // });
+    const { mutate: createObservationTypeMutation } = useMutation({
+      mutationFn: createMarket,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["market"] });
+        enqueueSnackbar("Market Created Successfully!", {
+          variant: "success",
+        });
+      },
+      onError: () => {
+        enqueueSnackbar(`Market Creation Failed`, {
+          variant: "error",
+        });
+      },
+    });
 
-    const handleCreateObservationType = (sales: Sales) => {
-      console.log(sales.marketName);
-      //   createObservationTypeMutation(submitData);
+    const handleCreateObservationType = (market: Market) => {
+      console.log("marketName:", market.name);
+      createObservationTypeMutation(market);
       setAddNewContactDialogOpen(false);
     };
 
@@ -213,9 +253,9 @@ export default function AddOrEditSalesReportDialog({
             }}
           >
             <TextField
-              {...register("marketName", { required: true })}
+              {...register("name", { required: true })}
               required
-              id="observation"
+              id="name"
               label="Market Name"
               size="small"
               fullWidth
@@ -245,6 +285,106 @@ export default function AddOrEditSalesReportDialog({
     );
   };
 
+  const AddNewGroupTypeDialog = () => {
+    const { register, handleSubmit } = useForm<Group>();
+
+    const { mutate: createObservationTypeMutation } = useMutation({
+      mutationFn: createGroup,
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["group"] });
+        enqueueSnackbar("Group Created Successfully!", {
+          variant: "success",
+        });
+      },
+      onError: () => {
+        enqueueSnackbar(`Group Creation Failed`, {
+          variant: "error",
+        });
+      },
+    });
+
+    const handleCreateObservationType = (group: Group) => {
+      console.log("marketName:", group.name);
+      createObservationTypeMutation(group);
+      setAddNewContactGroupDialogOpen(false);
+    };
+
+    return (
+      <Dialog
+        open={addNewContactGroupDialogOpen}
+        onClose={() => setAddNewContactGroupDialogOpen(false)}
+        fullScreen={isMobile}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          style: {
+            backgroundColor: grey[50],
+          },
+          component: "form",
+        }}
+      >
+        <DialogTitle
+          sx={{
+            paddingY: "1rem",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography variant="h6" component="div">
+            Add New Group Number
+          </Typography>
+          <IconButton
+            aria-label="open drawer"
+            onClick={() => setAddNewContactGroupDialogOpen(false)}
+            edge="start"
+            sx={{
+              color: "#024271",
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <Divider />
+        <DialogContent>
+          <Stack
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <TextField
+              {...register("name", { required: true })}
+              required
+              id="name"
+              label="Group Number"
+              size="small"
+              fullWidth
+              sx={{ marginBottom: "0.5rem" }}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ padding: "1rem" }}>
+          <Button
+            onClick={() => setAddNewContactGroupDialogOpen(false)}
+            sx={{ color: "var(--pallet-blue)" }}
+          >
+            Cancel
+          </Button>
+          <CustomButton
+            variant="contained"
+            sx={{
+              backgroundColor: "var(--button-color)",
+            }}
+            size="medium"
+            onClick={handleSubmit(handleCreateObservationType)}
+          >
+            Add Group Number
+          </CustomButton>
+        </DialogActions>
+      </Dialog>
+    );
+  };
   return (
     <Dialog
       open={open}
@@ -260,8 +400,9 @@ export default function AddOrEditSalesReportDialog({
         component: "form",
       }}
     >
-      {/* {addNewContactDialogOpen &&  */}
+      
       <AddNewObservationTypeDialog />
+      <AddNewGroupTypeDialog />
       <DialogTitle
         sx={{
           paddingY: "1rem",
@@ -364,6 +505,31 @@ export default function AddOrEditSalesReportDialog({
                   }
                   {...a11yProps(0)}
                 />
+                {defaultValues && (
+                  <Tab
+                    label={
+                      <Box
+                        sx={{
+                          color: "var(--pallet-blue)",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <KeyboardReturnOutlinedIcon
+                          fontSize="small"
+                          sx={{ color: "var(--text-color)" }}
+                        />
+                        <Typography
+                          variant="body2"
+                          sx={{ ml: "0.3rem", color: "var(--text-color)" }}
+                        >
+                          Return Packets
+                        </Typography>
+                      </Box>
+                    }
+                    {...a11yProps(1)}
+                  />
+                )}
               </Tabs>
             </AppBar>
             <TabPanel value={activeTab} index={0} dir={theme.direction}>
@@ -394,19 +560,41 @@ export default function AddOrEditSalesReportDialog({
                     }}
                   />
                 </Box>
+
                 <Controller
                   name="groupNo"
                   control={control}
-                  {...register("groupNo", { required: true })}
+                  rules={{ required: "required" }}
+                  defaultValue={defaultValues?.groupNo ?? 0}
                   render={({ field }) => (
                     <Autocomplete
                       {...field}
-                      onChange={(event, newValue) => field.onChange(newValue)}
+                      onChange={(_, value) => field.onChange(value)}
+                      value={field.value || ""}
                       size="small"
-                      options={
-                        GROUPNO?.length
-                          ? GROUPNO.map((department) => department.name)
-                          : []
+                      noOptionsText={
+                        <Typography
+                          variant="body2"
+                          color="inherit"
+                          gutterBottom
+                        >
+                          No matching Items
+                        </Typography>
+                      }
+                      options={[
+                        ...(groupData?.length
+                          ? groupData.map((group) => group.name)
+                          : []),
+                        "$ADD_NEW_ITEM",
+                      ]}
+                      renderOption={(props, option) =>
+                        option === "$ADD_NEW_ITEM" ? (
+                          <AddNewGroupNoButton {...props} />
+                        ) : (
+                          <li {...props} key={option}>
+                            {option}
+                          </li>
+                        )
                       }
                       sx={{
                         flex: 1,
@@ -416,16 +604,16 @@ export default function AddOrEditSalesReportDialog({
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          required
                           error={!!errors.groupNo}
-                          helperText={errors.groupNo && "Required"}
+                          helperText={errors.groupNo ? "Required" : ""}
                           label="Group Number"
-                          name="groupNo"
                         />
                       )}
                     />
                   )}
                 />
+
+
                 <TextField
                   required
                   type="number"
@@ -463,8 +651,8 @@ export default function AddOrEditSalesReportDialog({
                         </Typography>
                       }
                       options={[
-                        ...(MarketNames?.length
-                          ? MarketNames.map((designation) => designation.name)
+                        ...(marketData?.length
+                          ? marketData.map((market) => market.name)
                           : []),
                         "$ADD_NEW_ITEM",
                       ]}
@@ -533,6 +721,34 @@ export default function AddOrEditSalesReportDialog({
                   />
                 </Box>
               )}
+            </TabPanel>
+            <TabPanel value={activeTab} index={1} dir={theme.direction}>
+              <TextField
+                type="number"
+                id="noOfReturnPackets"
+                label="Return Packets"
+                error={!!errors.noOfReturnPackets}
+                helperText={
+                  errors.noOfReturnPackets
+                    ? errors.noOfReturnPackets.message
+                    : ""
+                }
+                size="small"
+                sx={{
+                  width: isMobile ? "full" : "50%",
+                  margin: "0.5rem",
+                }}
+                {...register("noOfReturnPackets", {
+                  min: {
+                    value: 0,
+                    message: "Amount must be greater than 0",
+                  },
+                  max: {
+                    value: defaultValues?.noOfPackets,
+                    message: `Amount must be Less than ${defaultValues?.noOfPackets}`,
+                  },
+                })}
+              />
             </TabPanel>
           </Stack>
         </Stack>

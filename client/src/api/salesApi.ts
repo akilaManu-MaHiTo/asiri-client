@@ -2,13 +2,18 @@ import axios from "axios";
 import { date, z } from "zod";
 
 export const salesSchema = z.object({
-  id: z.string(),
+  _id: z.string(),
   groupNo: z.number(),
   date: z.date(),
   unitPrice: z.number(),
   marketName: z.string(),
   noOfPackets: z.number(),
   salesPrice: z.number(),
+  createdAt: z.date(),
+  totalPrice: z.number(),
+  salesTotalPrice: z.number(),
+  noOfReturnPackets: z.number(),
+  totalReturnPrice: z.number(),
 });
 
 export type Sales = z.infer<typeof salesSchema>;
@@ -23,6 +28,30 @@ export async function getPacketList() {
   return res.data;
 }
 
+export async function getPacketTotal() {
+  const res = await axios.get("/api/packet/total-price");
+  return res.data;
+}
+
+export async function getDailyPacketTotal(date: String) {
+  const res = await axios.get(`/api/packet/daily-total-price/${date}`);
+  return res.data;
+}
+
+export async function getMonthlyPacketTotal(date: String) {
+  const res = await axios.get(`/api/packet/monthly-total-price/${date}`);
+  return res.data;
+}
+
+export async function getDailyPacketReport(date: String) {
+  const res = await axios.get(`/api/packet/daily-sales/${date}`);
+  return res.data;
+}
+
+export async function getMonthlyPacketReport(date: String) {
+  const res = await axios.get(`/api/packet/monthly-sales/${date}`);
+  return res.data;
+}
 
 export async function getAccidentsList() {
   const res = await axios.get("/api/accidents");
@@ -77,52 +106,18 @@ export const createAccident = async (accident: Sales) => {
   return res.data;
 };
 
-export const updateAccident = async (accident: Sales) => {
-  const formData = new FormData();
-
-  Object.keys(accident).forEach((key) => {
-    const value = accident[key as keyof typeof accident];
-
-    if (key === "evidence" && Array.isArray(value)) {
-      value.forEach((file, index) => {
-        formData.append(`evidence[${index}]`, file as File);
-      });
-    } else if (Array.isArray(value)) {
-      value.forEach((item, index) => {
-        if (key === "witnesses" || key === "effectedIndividuals") {
-          Object.keys(item).forEach((nestedKey) => {
-            formData.append(
-              `${key}[${index}][${nestedKey}]`,
-              item[nestedKey].toString()
-            );
-          });
-        } else {
-          formData.append(`${key}[${index}]`, JSON.stringify(item));
-        }
-      });
-    } else if (value instanceof Date) {
-      formData.append(key, value.toISOString());
-    } else if (value !== null && value !== undefined) {
-      formData.append(key, value.toString());
-    }
-  });
-  const res = await axios.post(
-    `/api/accidents/${accident.id}/update`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-
+export const updatePacket = async (sale: Sales) => {
+  const res = await axios.put(`/api/packet/${sale._id}`, sale);
   return res.data;
 };
 
-export const deleteAccident = async (id: string) => {
-  const res = await axios.delete(`/api/accidents/${id}/delete`);
+export const deletePacket = async (id: string) => {
+  const res = await axios.delete(`/api/packet/${id}`);
   return res.data;
 };
+
+
+
 
 export const MarketNames = [
   {
