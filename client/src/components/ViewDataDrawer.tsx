@@ -120,9 +120,7 @@ export function DrawerEditAndDeleteButtons({
             >
               <EditIcon
                 sx={{
-                  color: disableEdit
-                    ? "var(--pallet-grey)"
-                    : "var(--pallet-blue)",
+                  color: disableEdit ? "gray" : "var(--button-color)",
                 }}
               />
             </IconButton>
@@ -130,7 +128,7 @@ export function DrawerEditAndDeleteButtons({
             <CustomButton
               variant="contained"
               sx={{
-                backgroundColor: "var(--pallet-blue)",
+                backgroundColor: "var(--button-color)",
               }}
               size="medium"
               onClick={onEdit}
@@ -151,13 +149,13 @@ export function DrawerEditAndDeleteButtons({
               sx={{ marginX: 1 }}
               disabled={disableDelete}
             >
-              <DeleteIcon sx={{ color: "var(--pallet-red)" }} />
+              <DeleteIcon sx={{ color: "var(--secondary-color)" }} />
             </IconButton>
           ) : (
             <CustomButton
               variant="contained"
               sx={{
-                backgroundColor: "var(--pallet-red)",
+                backgroundColor: "var(--secondary-color)",
                 marginX: 1,
               }}
               size="medium"
@@ -203,7 +201,7 @@ export function DrawerContentItem({
       {isRichText ? (
         <Typography
           variant="body2"
-          dangerouslySetInnerHTML={{ __html: value ?? "--" }}
+          dangerouslySetInnerHTML={{ __html: String(value ?? "--") }}
         />
       ) : (
         <Typography variant="body2">{value ?? "--"}</Typography>

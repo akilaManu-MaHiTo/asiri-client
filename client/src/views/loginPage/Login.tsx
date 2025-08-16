@@ -36,7 +36,13 @@ const LoginPage = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["current-user"] });
       localStorage.setItem("token", data?.token);
-      enqueueSnackbar("Welcome Back!", { variant: "success" });
+      enqueueSnackbar("Welcome Back!", {
+        variant: "default",
+        style: {
+          backgroundColor: "#000",
+          color: "#fff",
+        },
+      });
       navigate("/home");
     },
     onError: () => {
@@ -82,7 +88,7 @@ const LoginPage = () => {
           display="flex"
           alignItems="center"
           flexDirection={isMobile ? "column" : "row"}
-          gap={isMobile ? 3  : ""}
+          gap={isMobile ? 3 : ""}
         >
           <img src={Logo} alt="logo" height="60em" />
           <Typography ml={2} variant="h4" noWrap component="div">
