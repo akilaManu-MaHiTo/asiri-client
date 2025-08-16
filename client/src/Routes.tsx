@@ -6,7 +6,9 @@ import MainLayout from "./components/layout/MainLayout";
 
 const LoginPage = React.lazy(() => import("./views/loginPage/Login"));
 const HomePage = React.lazy(() => import("./views/HomePage"));
-const DailyReportTable = React.lazy(() => import("./views/dailySales/DailyReportTable"));
+const DailyReportTable = React.lazy(
+  () => import("./views/dailySales/DailyReportTable")
+);
 
 const ProtectedRoute = () => {
   const { user, status } = useCurrentUser();
@@ -44,7 +46,22 @@ const AppRoutes = () => {
       <Route path="/" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={withLayout(MainLayout, HomePage)} />
-        <Route path="/sales/daily-report" element={withLayout(MainLayout, DailyReportTable)} />
+        <Route
+          path="/sales/report-history"
+          element={withLayout(MainLayout, DailyReportTable)}
+        />
+        <Route
+          path="/sales/daily-report"
+          element={withLayout(MainLayout, () => (
+            <DailyReportTable isDailyReport={true} isMonthlyReport={false} />
+          ))}
+        />
+        <Route
+          path="/sales/monthly-report"
+          element={withLayout(MainLayout, () => (
+            <DailyReportTable isDailyReport={false} isMonthlyReport={true} />
+          ))}
+        />
       </Route>
     </Routes>
   );

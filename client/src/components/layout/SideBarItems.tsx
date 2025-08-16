@@ -32,7 +32,9 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import MiscellaneousServicesOutlinedIcon from '@mui/icons-material/MiscellaneousServicesOutlined';
 import CategoryOutlinedIcon from '@mui/icons-material/CategoryOutlined';
 import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
-
+import AccessTimeOutlinedIcon from '@mui/icons-material/AccessTimeOutlined';
+import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined';
 export interface SidebarItem {
   title?: string;
   headline?: string;
@@ -73,14 +75,20 @@ export const sidebarItems: Array<SidebarItem> = [
   },
   {
     title: "Daily Report",
-    icon: <PointOfSaleOutlinedIcon fontSize="small" />,
+    icon: <LightModeOutlinedIcon fontSize="small" />,
     href: "/sales/daily-report",
     // accessKey: //  PermissionKeys.ADMIN_USERS_VIEW, // need to add permission key
   },
   {
-    title: "Returned Items",
-    icon: <KeyboardReturnOutlinedIcon fontSize="small" />,
-    href: "/sales/returned-items",
+    title: "Monthly Report",
+    icon: <CalendarTodayOutlinedIcon fontSize="small" />,
+    href: "/sales/monthly-report",
+    // accessKey: //  PermissionKeys.ADMIN_USERS_VIEW, // need to add permission key
+  },
+  {
+    title: "Report History",
+    icon: <AccessTimeOutlinedIcon fontSize="small" />,
+    href: "/sales/report-history",
     // accessKey: //  PermissionKeys.ADMIN_USERS_VIEW, // need to add permission key
   },
   // {
@@ -92,13 +100,13 @@ export const sidebarItems: Array<SidebarItem> = [
   {
     headline: "Material Summary",
   },
-  {
-    title: "Material Report",
-    icon: <CategoryOutlinedIcon fontSize="small" />,
-    href: "/material/material-report",
-    open: false,
-    disabled: false,
-  },
+  // {
+  //   title: "Material Report",
+  //   icon: <CategoryOutlinedIcon fontSize="small" />,
+  //   href: "*",
+  //   open: true,
+  //   disabled: true,
+  // },
   // {
   //   title: "Inventory List",
   //   href: "/sustainability",
