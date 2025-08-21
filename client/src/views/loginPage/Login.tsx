@@ -22,7 +22,7 @@ type FormData = {
   email: string;
   password: string;
 };
-
+//this is type script
 const LoginPage = () => {
   const { isMobile, isTablet } = useIsMobile();
   const {
