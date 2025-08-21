@@ -24,6 +24,7 @@ type FormData = {
 };
 //this is type script
 //this is my last comment
+//fix the bug
 const LoginPage = () => {
   const { isMobile, isTablet } = useIsMobile();
   const {
