@@ -18,6 +18,7 @@ export const salesSchema = z.object({
   section02: z.number(),
   section01Price: z.number().optional(),
   section02Price: z.number().optional(),
+  isSection02Only: z.boolean().optional(),
 });
 
 export type Sales = z.infer<typeof salesSchema>;
