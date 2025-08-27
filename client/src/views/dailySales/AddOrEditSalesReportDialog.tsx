@@ -36,6 +36,8 @@ import { createGroup, getGrouplist, Group } from "../../api/groupApi";
 import KeyboardReturnOutlinedIcon from "@mui/icons-material/KeyboardReturnOutlined";
 import LooksOneOutlinedIcon from "@mui/icons-material/LooksOneOutlined";
 import LooksTwoOutlinedIcon from "@mui/icons-material/LooksTwoOutlined";
+import SwitchButton from "../../components/SwitchButton";
+import { is } from "date-fns/locale";
 
 type DialogProps = {
   open: boolean;
@@ -95,6 +97,7 @@ export default function AddOrEditSalesReportDialog({
     handleSubmit,
     watch,
     control,
+    setValue,
     formState: { errors },
     reset,
   } = useForm<Sales>({
@@ -123,8 +126,8 @@ export default function AddOrEditSalesReportDialog({
   }, [defaultValues, reset]);
 
   const allPacketsCount = Number(watch("noOfPackets") || 0);
-  const section01Count = Number(watch("section01") || 0);
-
+  let section01Count = Number(watch("section01") || 0);
+  const isSection02Only = Boolean(watch("isSection02Only"));
   const resetForm = () => {
     reset();
   };
@@ -753,48 +756,68 @@ export default function AddOrEditSalesReportDialog({
               )}
             </TabPanel>
             <TabPanel value={activeTab} index={1} dir={theme.direction}>
-              <TextField
-                type="number"
-                id="section01"
-                label="Section 01 Packets"
-                error={!!errors.section01}
-                helperText={errors.section01 ? errors.section01.message : ""}
-                size="small"
-                sx={{
-                  width: isMobile ? "full" : "50%",
-                  margin: "0.5rem",
-                }}
-                {...register("section01", {
-                  max: {
-                    value: allPacketsCount,
-                    message: `Cannot exceed total (${allPacketsCount})`,
-                  },
-                })}
+              <Controller
+                control={control}
+                name="isSection02Only"
+                render={({ field }) => (
+                  <SwitchButton
+                    label="Is Section 02 Only"
+                    onChange={(newValue) => {
+                      field.onChange(newValue);
+                      setValue("section01", 0);
+                      setValue("section02", 0);
+                    }}
+                    value={!!field.value}
+                  />
+                )}
               />
-              {section01Count > 0 && section01Count < allPacketsCount && (
+
+              {/* Section 01 Input */}
+              {!isSection02Only && (
+                <TextField
+                  type="number"
+                  id="section01"
+                  label="Section 01 Packets"
+                  error={!!errors.section01}
+                  helperText={errors.section01?.message}
+                  size="small"
+                  sx={{
+                    width: isMobile ? "100%" : "50%",
+                    margin: "0.5rem",
+                  }}
+                  {...register("section01", {
+                    max: {
+                      value: allPacketsCount,
+                      message: `Cannot exceed total (${allPacketsCount})`,
+                    },
+                  })}
+                />
+              )}
+
+              {(isSection02Only ||
+                (section01Count > 0 && section01Count < allPacketsCount)) && (
                 <TextField
                   type="number"
                   id="section02"
                   label="Section 02 Packets"
                   error={!!errors.section02}
-                  helperText={errors.section02 ? errors.section02.message : ""}
+                  helperText={errors.section02?.message}
                   size="small"
                   sx={{
-                    width: isMobile ? "full" : "50%",
+                    width: isMobile ? "100%" : "50%",
                     margin: "0.5rem",
                   }}
                   {...register("section02", {
                     validate: (value) => {
                       const val = Number(value);
-                      const remaining =
-                        allPacketsCount - Number(section01Count || 0);
+                      const remaining = isSection02Only
+                        ? allPacketsCount
+                        : allPacketsCount - Number(section01Count || 0);
 
-                      if (val > remaining) {
+                      if (val > remaining)
                         return `Cannot exceed remaining (${remaining})`;
-                      }
-                      if (val < remaining) {
+                      if (val < remaining)
                         return `Must exactly fill remaining (${remaining})`;
-                      }
                       return true;
                     },
                   })}

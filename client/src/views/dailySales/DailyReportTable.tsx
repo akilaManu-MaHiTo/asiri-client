@@ -264,10 +264,10 @@ function DailyReportTable({
         returnPackets: monthlyPacketTotalData.returnPackets,
         totalPrice: monthlyPacketTotalData.totalPrice,
         totalReturnPrice: monthlyPacketTotalData.totalReturnPrice,
-        section01Total: dailyPacketTotalData.section01Total,
-        section02Total: dailyPacketTotalData.section02Total,
-        section01Price: dailyPacketTotalData.section01PriceTotal,
-        section02Price: dailyPacketTotalData.section02PriceTotal,
+        section01Total: monthlyPacketTotalData.section01Total,
+        section02Total: monthlyPacketTotalData.section02Total,
+        section01Price: monthlyPacketTotalData.section01PriceTotal,
+        section02Price: monthlyPacketTotalData.section02PriceTotal,
         subTotal: monthlyPacketTotalData.subTotal,
       };
     } else {
@@ -277,10 +277,10 @@ function DailyReportTable({
         returnPackets: packetTotalData.returnPackets,
         totalPrice: packetTotalData.totalPrice,
         totalReturnPrice: packetTotalData.totalReturnPrice,
-        section01Total: dailyPacketTotalData.section01Total,
-        section02Total: dailyPacketTotalData.section02Total,
-        section01Price: dailyPacketTotalData.section01PriceTotal,
-        section02Price: dailyPacketTotalData.section02PriceTotal,
+        section01Total: packetTotalData?.section01Total,
+        section02Total: packetTotalData.section02Total,
+        section01Price: packetTotalData.section01PriceTotal,
+        section02Price: packetTotalData.section02PriceTotal,
         subTotal: packetTotalData.subTotal,
       };
     }
