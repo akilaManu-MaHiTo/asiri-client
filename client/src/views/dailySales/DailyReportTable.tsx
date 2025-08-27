@@ -51,7 +51,6 @@ import DatePickerComponent from "../../components/DatePickerComponent";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import { generateMonthlySalesPDF } from "../../util/pdfGenerator";
 import ViewSalesReportContent from "./ViewSalesReportContent";
-
 function DailyReportTable({
   isDailyReport,
   isMonthlyReport,
@@ -252,6 +251,10 @@ function DailyReportTable({
         returnPackets: dailyPacketTotalData.returnPackets,
         totalPrice: dailyPacketTotalData.totalPrice,
         totalReturnPrice: dailyPacketTotalData.totalReturnPrice,
+        section01Total: dailyPacketTotalData.section01Total,
+        section02Total: dailyPacketTotalData.section02Total,
+        section01Price: dailyPacketTotalData.section01PriceTotal,
+        section02Price: dailyPacketTotalData.section02PriceTotal,
         subTotal: dailyPacketTotalData.subTotal,
       };
     } else if (isMonthlyReport) {
@@ -261,6 +264,10 @@ function DailyReportTable({
         returnPackets: monthlyPacketTotalData.returnPackets,
         totalPrice: monthlyPacketTotalData.totalPrice,
         totalReturnPrice: monthlyPacketTotalData.totalReturnPrice,
+        section01Total: dailyPacketTotalData.section01Total,
+        section02Total: dailyPacketTotalData.section02Total,
+        section01Price: dailyPacketTotalData.section01PriceTotal,
+        section02Price: dailyPacketTotalData.section02PriceTotal,
         subTotal: monthlyPacketTotalData.subTotal,
       };
     } else {
@@ -270,6 +277,10 @@ function DailyReportTable({
         returnPackets: packetTotalData.returnPackets,
         totalPrice: packetTotalData.totalPrice,
         totalReturnPrice: packetTotalData.totalReturnPrice,
+        section01Total: dailyPacketTotalData.section01Total,
+        section02Total: dailyPacketTotalData.section02Total,
+        section01Price: dailyPacketTotalData.section01PriceTotal,
+        section02Price: dailyPacketTotalData.section02PriceTotal,
         subTotal: packetTotalData.subTotal,
       };
     }
@@ -432,6 +443,50 @@ function DailyReportTable({
           </Box>
         </Stack>
       </Box>
+      <Box
+        sx={{
+          padding: theme.spacing(2),
+          boxShadow: 2,
+          marginBottom: 2,
+          borderRadius: 1,
+          overflowX: "hidden",
+        }}
+      >
+        <Stack display={"flex"} flexDirection={isMobile ? "column" : "row"}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">
+              Section 01 Packets:{" "}
+              <Box component="span" sx={{ fontSize: "1rem" }}>
+                {allTotal?.section01Total}
+              </Box>
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">
+              Section 01 Price:{" "}
+              <Box component="span" sx={{ fontSize: "1rem" }}>
+                {allTotal?.section01Price}
+              </Box>
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">
+              Section 02 Packets:{" "}
+              <Box component="span" sx={{ fontSize: "1rem" }}>
+                {allTotal?.section02Total}
+              </Box>
+            </Typography>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2">
+              Section 02 Price:{" "}
+              <Box component="span" sx={{ fontSize: "1rem" }}>
+                {allTotal?.section02Price}
+              </Box>
+            </Typography>
+          </Box>
+        </Stack>
+      </Box>
 
       <Stack sx={{ alignItems: "center" }}>
         <TableContainer
@@ -504,6 +559,7 @@ function DailyReportTable({
                 <TableCell align="center">Date</TableCell>
                 <TableCell align="right">No Of Packets</TableCell>
                 <TableCell align="right">No Of Returns</TableCell>
+                <TableCell align="right">Section Packets</TableCell>
                 <TableCell align="right">Unit Price</TableCell>
                 <TableCell align="right">Market Name</TableCell>
                 <TableCell align="right">Sub Total Price</TableCell>
@@ -528,6 +584,16 @@ function DailyReportTable({
                     </TableCell>
                     <TableCell align="right">{row.noOfPackets}</TableCell>
                     <TableCell align="right">{row.noOfReturnPackets}</TableCell>
+                    <TableCell align="right">
+                      <Stack>
+                        <Typography variant="body2">
+                          Section 01: {row.section01 || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          Section 02: {row.section02 || 0}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
                     <TableCell align="right">{row.unitPrice}</TableCell>
                     <TableCell align="right">{row.marketName}</TableCell>
                     <TableCell align="right">
@@ -552,7 +618,7 @@ function DailyReportTable({
                     isDailyReport
                       ? dailyPacketData?.length
                       : isMonthlyReport
-                      ? monthlyPacketData
+                      ? monthlyPacketData?.length
                       : packetData?.length
                   }
                   rowsPerPage={rowsPerPage}

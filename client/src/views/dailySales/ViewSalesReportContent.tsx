@@ -16,7 +16,8 @@ import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import { useSnackbar } from "notistack";
 import useCurrentUser from "../../hooks/useCurrentUser";
 import { Sales } from "../../api/salesApi";
-import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
+import KeyboardReturnOutlinedIcon from "@mui/icons-material/KeyboardReturnOutlined";
+import LooksOneOutlinedIcon from "@mui/icons-material/LooksOneOutlined";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -162,6 +163,29 @@ function ViewSalesReportContent({
                     alignItems: "center",
                   }}
                 >
+                  <LooksOneOutlinedIcon
+                    fontSize="small"
+                    sx={{ color: "var(--text-color)" }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{ ml: "0.3rem", color: "var(--text-color)" }}
+                  >
+                    Section Packets
+                  </Typography>
+                </Box>
+              }
+              {...a11yProps(1)}
+            />
+            <Tab
+              label={
+                <Box
+                  sx={{
+                    color: "var(--pallet-blue)",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
                   <KeyboardReturnOutlinedIcon
                     fontSize="small"
                     sx={{ color: "var(--text-color)" }}
@@ -174,7 +198,7 @@ function ViewSalesReportContent({
                   </Typography>
                 </Box>
               }
-              {...a11yProps(1)}
+              {...a11yProps(2)}
             />
           </Tabs>
         </AppBar>
@@ -211,6 +235,30 @@ function ViewSalesReportContent({
           </Stack>
         </TabPanel>
         <TabPanel value={activeTab} index={1} dir={theme.direction}>
+          <Stack display={"flex"} flexDirection={isMobile ? "column" : "row"}>
+            <Box flex={1}>
+              <DrawerContentItem
+                label="Section 01 Packets"
+                value={dailySales?.section01}
+              />
+              <DrawerContentItem
+                label="Section 01 Packets Price"
+                value={dailySales?.section01Price?.toFixed(2) || "0"}
+              />
+            </Box>
+            <Box flex={1}>
+              <DrawerContentItem
+                label="Section 02 Packets"
+                value={dailySales?.section02}
+              />
+              <DrawerContentItem
+                label="Section 02 Packets Price"
+                value={dailySales?.section02Price?.toFixed(2) || "0"}
+              />
+            </Box>
+          </Stack>
+        </TabPanel>
+        <TabPanel value={activeTab} index={2} dir={theme.direction}>
           <DrawerContentItem
             label="Return Packets"
             value={dailySales.noOfReturnPackets}

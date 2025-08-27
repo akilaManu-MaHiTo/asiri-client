@@ -33,7 +33,9 @@ import { Sales } from "../../api/salesApi";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createMarket, getMarketlist, Market } from "../../api/marketApi";
 import { createGroup, getGrouplist, Group } from "../../api/groupApi";
-import KeyboardReturnOutlinedIcon from '@mui/icons-material/KeyboardReturnOutlined';
+import KeyboardReturnOutlinedIcon from "@mui/icons-material/KeyboardReturnOutlined";
+import LooksOneOutlinedIcon from "@mui/icons-material/LooksOneOutlined";
+import LooksTwoOutlinedIcon from "@mui/icons-material/LooksTwoOutlined";
 
 type DialogProps = {
   open: boolean;
@@ -82,7 +84,8 @@ export default function AddOrEditSalesReportDialog({
 }: DialogProps) {
   const { isMobile, isTablet } = useIsMobile();
   const [addNewContactDialogOpen, setAddNewContactDialogOpen] = useState(false);
-  const [addNewContactGroupDialogOpen, setAddNewContactGroupDialogOpen] = useState(false);
+  const [addNewContactGroupDialogOpen, setAddNewContactGroupDialogOpen] =
+    useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -118,6 +121,9 @@ export default function AddOrEditSalesReportDialog({
       reset();
     }
   }, [defaultValues, reset]);
+
+  const allPacketsCount = Number(watch("noOfPackets") || 0);
+  const section01Count = Number(watch("section01") || 0);
 
   const resetForm = () => {
     reset();
@@ -400,7 +406,6 @@ export default function AddOrEditSalesReportDialog({
         component: "form",
       }}
     >
-      
       <AddNewObservationTypeDialog />
       <AddNewGroupTypeDialog />
       <DialogTitle
@@ -505,6 +510,32 @@ export default function AddOrEditSalesReportDialog({
                   }
                   {...a11yProps(0)}
                 />
+                {allPacketsCount && (
+                  <Tab
+                    label={
+                      <Box
+                        sx={{
+                          color: "var(--pallet-blue)",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <LooksOneOutlinedIcon
+                          fontSize="small"
+                          sx={{ color: "var(--text-color)" }}
+                        />
+                        <Typography
+                          variant="body2"
+                          sx={{ ml: "0.3rem", color: "var(--text-color)" }}
+                        >
+                          Section Packets
+                        </Typography>
+                      </Box>
+                    }
+                    {...a11yProps(1)}
+                  />
+                )}
+
                 {defaultValues && (
                   <Tab
                     label={
@@ -527,7 +558,7 @@ export default function AddOrEditSalesReportDialog({
                         </Typography>
                       </Box>
                     }
-                    {...a11yProps(1)}
+                    {...a11yProps(2)}
                   />
                 )}
               </Tabs>
@@ -612,7 +643,6 @@ export default function AddOrEditSalesReportDialog({
                     />
                   )}
                 />
-
 
                 <TextField
                   required
@@ -723,6 +753,55 @@ export default function AddOrEditSalesReportDialog({
               )}
             </TabPanel>
             <TabPanel value={activeTab} index={1} dir={theme.direction}>
+              <TextField
+                type="number"
+                id="section01"
+                label="Section 01 Packets"
+                error={!!errors.section01}
+                helperText={errors.section01 ? errors.section01.message : ""}
+                size="small"
+                sx={{
+                  width: isMobile ? "full" : "50%",
+                  margin: "0.5rem",
+                }}
+                {...register("section01", {
+                  max: {
+                    value: allPacketsCount,
+                    message: `Cannot exceed total (${allPacketsCount})`,
+                  },
+                })}
+              />
+              {section01Count > 0 && section01Count < allPacketsCount && (
+                <TextField
+                  type="number"
+                  id="section02"
+                  label="Section 02 Packets"
+                  error={!!errors.section02}
+                  helperText={errors.section02 ? errors.section02.message : ""}
+                  size="small"
+                  sx={{
+                    width: isMobile ? "full" : "50%",
+                    margin: "0.5rem",
+                  }}
+                  {...register("section02", {
+                    validate: (value) => {
+                      const val = Number(value);
+                      const remaining =
+                        allPacketsCount - Number(section01Count || 0);
+
+                      if (val > remaining) {
+                        return `Cannot exceed remaining (${remaining})`;
+                      }
+                      if (val < remaining) {
+                        return `Must exactly fill remaining (${remaining})`;
+                      }
+                      return true;
+                    },
+                  })}
+                />
+              )}
+            </TabPanel>
+            <TabPanel value={activeTab} index={2} dir={theme.direction}>
               <TextField
                 type="number"
                 id="noOfReturnPackets"

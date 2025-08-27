@@ -14,6 +14,10 @@ export const salesSchema = z.object({
   salesTotalPrice: z.number(),
   noOfReturnPackets: z.number(),
   totalReturnPrice: z.number(),
+  section01: z.number(),
+  section02: z.number(),
+  section01Price: z.number().optional(),
+  section02Price: z.number().optional(),
 });
 
 export type Sales = z.infer<typeof salesSchema>;
