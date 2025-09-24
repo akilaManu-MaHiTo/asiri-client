@@ -126,8 +126,6 @@ export default function AddOrEditSalesReportDialog({
   }, [defaultValues, reset]);
 
   const allPacketsCount = Number(watch("noOfPackets") || 0);
-  let section01Count = Number(watch("section01") || 0);
-  const isSection02Only = Boolean(watch("isSection02Only"));
   const resetForm = () => {
     reset();
   };
@@ -660,7 +658,10 @@ export default function AddOrEditSalesReportDialog({
                     margin: "0.5rem",
                     marginTop: isTablet ? "0.5rem" : "1.8rem",
                   }}
-                  {...register("unitPrice", { required: true })}
+                  {...register("unitPrice", {
+                    required: true,
+                    valueAsNumber: true,
+                  })}
                 />
 
                 <Controller
@@ -735,7 +736,10 @@ export default function AddOrEditSalesReportDialog({
                       margin: "0.5rem",
                       marginTop: isTablet ? "0.5rem" : "1.8rem",
                     }}
-                    {...register("noOfPackets", { required: true })}
+                    {...register("noOfPackets", {
+                      required: true,
+                      valueAsNumber: true,
+                    })}
                   />
                   <TextField
                     required
@@ -750,79 +754,110 @@ export default function AddOrEditSalesReportDialog({
                       margin: "0.5rem",
                       marginTop: isTablet ? "0.5rem" : "1.8rem",
                     }}
-                    {...register("salesPrice", { required: true })}
+                    {...register("salesPrice", {
+                      required: true,
+                      valueAsNumber: true,
+                    })}
                   />
                 </Box>
               )}
             </TabPanel>
             <TabPanel value={activeTab} index={1} dir={theme.direction}>
-              <Controller
-                control={control}
-                name="isSection02Only"
-                render={({ field }) => (
-                  <SwitchButton
-                    label="Is Section 02 Only"
-                    onChange={(newValue) => {
-                      field.onChange(newValue);
-                      setValue("section01", 0);
-                      setValue("section02", 0);
-                    }}
-                    value={!!field.value}
-                  />
-                )}
+              <TextField
+                type="number"
+                id="section01"
+                label="Section 01 Packets"
+                error={!!errors.section01}
+                helperText={errors.section01?.message}
+                size="small"
+                sx={{
+                  width: isMobile ? "100%" : "50%",
+                  margin: "0.5rem",
+                }}
+                {...register("section01", {
+                  max: {
+                    value: allPacketsCount,
+                    message: `Cannot exceed total (${allPacketsCount})`,
+                  },
+                  valueAsNumber: true,
+                })}
               />
-
-              {/* Section 01 Input */}
-              {!isSection02Only && (
-                <TextField
-                  type="number"
-                  id="section01"
-                  label="Section 01 Packets"
-                  error={!!errors.section01}
-                  helperText={errors.section01?.message}
-                  size="small"
-                  sx={{
-                    width: isMobile ? "100%" : "50%",
-                    margin: "0.5rem",
-                  }}
-                  {...register("section01", {
-                    max: {
-                      value: allPacketsCount,
-                      message: `Cannot exceed total (${allPacketsCount})`,
-                    },
-                  })}
-                />
-              )}
-
-              {(isSection02Only ||
-                (section01Count > 0 && section01Count < allPacketsCount)) && (
-                <TextField
-                  type="number"
-                  id="section02"
-                  label="Section 02 Packets"
-                  error={!!errors.section02}
-                  helperText={errors.section02?.message}
-                  size="small"
-                  sx={{
-                    width: isMobile ? "100%" : "50%",
-                    margin: "0.5rem",
-                  }}
-                  {...register("section02", {
-                    validate: (value) => {
-                      const val = Number(value);
-                      const remaining = isSection02Only
-                        ? allPacketsCount
-                        : allPacketsCount - Number(section01Count || 0);
-
-                      if (val > remaining)
-                        return `Cannot exceed remaining (${remaining})`;
-                      if (val < remaining)
-                        return `Must exactly fill remaining (${remaining})`;
-                      return true;
-                    },
-                  })}
-                />
-              )}
+              <TextField
+                type="number"
+                id="section02"
+                label="Section 02 Packets"
+                error={!!errors.section02}
+                helperText={errors.section02?.message}
+                size="small"
+                sx={{
+                  width: isMobile ? "100%" : "50%",
+                  margin: "0.5rem",
+                }}
+                {...register("section02", {
+                  max: {
+                    value: allPacketsCount,
+                    message: `Cannot exceed total (${allPacketsCount})`,
+                  },
+                  valueAsNumber: true,
+                })}
+              />
+              <TextField
+                type="number"
+                id="section03"
+                label="Section 03 Packets"
+                error={!!errors.section03}
+                helperText={errors.section03?.message}
+                size="small"
+                sx={{
+                  width: isMobile ? "100%" : "50%",
+                  margin: "0.5rem",
+                }}
+                {...register("section03", {
+                  max: {
+                    value: allPacketsCount,
+                    message: `Cannot exceed total (${allPacketsCount})`,
+                  },
+                  valueAsNumber: true,
+                })}
+              />
+              <TextField
+                type="number"
+                id="section04"
+                label="Section 04 Packets"
+                error={!!errors.section04}
+                helperText={errors.section04?.message}
+                size="small"
+                sx={{
+                  width: isMobile ? "100%" : "50%",
+                  margin: "0.5rem",
+                }}
+                {...register("section04", {
+                  max: {
+                    value: allPacketsCount,
+                    message: `Cannot exceed total (${allPacketsCount})`,
+                  },
+                  valueAsNumber: true,
+                })}
+              />
+              <TextField
+                type="number"
+                id="section05"
+                label="Section 05 Packets"
+                error={!!errors.section05}
+                helperText={errors.section05?.message}
+                size="small"
+                sx={{
+                  width: isMobile ? "100%" : "50%",
+                  margin: "0.5rem",
+                }}
+                {...register("section05", {
+                  max: {
+                    value: allPacketsCount,
+                    message: `Cannot exceed total (${allPacketsCount})`,
+                  },
+                  valueAsNumber: true,
+                })}
+              />
             </TabPanel>
             <TabPanel value={activeTab} index={2} dir={theme.direction}>
               <TextField
@@ -849,6 +884,7 @@ export default function AddOrEditSalesReportDialog({
                     value: defaultValues?.noOfPackets,
                     message: `Amount must be Less than ${defaultValues?.noOfPackets}`,
                   },
+                  valueAsNumber: true,
                 })}
               />
             </TabPanel>
