@@ -167,8 +167,11 @@ function DailyReportTable({
           variant: "success",
         });
       },
-      onError: () => {
-        enqueueSnackbar(`Daily Sales Report Creation Failed`, {
+      onError: (error: any) => {
+        const errorMessage =
+          error?.data?.message || error?.message || "Packet Creation Failed";
+
+        enqueueSnackbar(errorMessage, {
           variant: "error",
         });
       },

@@ -14,10 +14,19 @@ export const salesSchema = z.object({
   salesTotalPrice: z.number(),
   noOfReturnPackets: z.number(),
   totalReturnPrice: z.number(),
+
   section01: z.number(),
   section02: z.number(),
+  section03: z.number(),
+  section04: z.number(),
+  section05: z.number(),
+
   section01Price: z.number().optional(),
   section02Price: z.number().optional(),
+  section03Price: z.number().optional(),
+  section04Price: z.number().optional(),
+  section05Price: z.number().optional(),
+
   isSection02Only: z.boolean().optional(),
 });
 
@@ -120,9 +129,6 @@ export const deletePacket = async (id: string) => {
   const res = await axios.delete(`/api/packet/${id}`);
   return res.data;
 };
-
-
-
 
 export const MarketNames = [
   {
