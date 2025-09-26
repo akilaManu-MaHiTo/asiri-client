@@ -256,6 +256,36 @@ function ViewSalesReportContent({
                 value={dailySales?.section02Price?.toFixed(2) || "0"}
               />
             </Box>
+            <Box flex={1}>
+              <DrawerContentItem
+                label="Section 03 Packets"
+                value={dailySales?.section03}
+              />
+              <DrawerContentItem
+                label="Section 03 Packets Price"
+                value={dailySales?.section03Price?.toFixed(2) || "0"}
+              />
+            </Box>
+            <Box flex={1}>
+              <DrawerContentItem
+                label="Section 04 Packets"
+                value={dailySales?.section04}
+              />
+              <DrawerContentItem
+                label="Section 04 Packets Price"
+                value={dailySales?.section04Price?.toFixed(2) || "0"}
+              />
+            </Box>
+            <Box flex={1}>
+              <DrawerContentItem
+                label="Section 05 Packets"
+                value={dailySales?.section02}
+              />
+              <DrawerContentItem
+                label="Section 05 Packets Price"
+                value={dailySales?.section05Price?.toFixed(2) || "0"}
+              />
+            </Box>
           </Stack>
         </TabPanel>
         <TabPanel value={activeTab} index={2} dir={theme.direction}>
