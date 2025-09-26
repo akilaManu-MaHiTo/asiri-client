@@ -254,10 +254,19 @@ function DailyReportTable({
         returnPackets: dailyPacketTotalData.returnPackets,
         totalPrice: dailyPacketTotalData.totalPrice,
         totalReturnPrice: dailyPacketTotalData.totalReturnPrice,
+
         section01Total: dailyPacketTotalData.section01Total,
         section02Total: dailyPacketTotalData.section02Total,
+        section03Total: dailyPacketTotalData.section03Total,
+        section04Total: dailyPacketTotalData.section04Total,
+        section05Total: dailyPacketTotalData.section05Total,
+
         section01Price: dailyPacketTotalData.section01PriceTotal,
         section02Price: dailyPacketTotalData.section02PriceTotal,
+        section03Price: dailyPacketTotalData.section02PriceTotal,
+        section04Price: dailyPacketTotalData.section02PriceTotal,
+        section05Price: dailyPacketTotalData.section02PriceTotal,
+
         subTotal: dailyPacketTotalData.subTotal,
       };
     } else if (isMonthlyReport) {
@@ -267,10 +276,19 @@ function DailyReportTable({
         returnPackets: monthlyPacketTotalData.returnPackets,
         totalPrice: monthlyPacketTotalData.totalPrice,
         totalReturnPrice: monthlyPacketTotalData.totalReturnPrice,
+
         section01Total: monthlyPacketTotalData.section01Total,
         section02Total: monthlyPacketTotalData.section02Total,
+        section03Total: monthlyPacketTotalData.section03Total,
+        section04Total: monthlyPacketTotalData.section04Total,
+        section05Total: monthlyPacketTotalData.section05Total,
+
         section01Price: monthlyPacketTotalData.section01PriceTotal,
         section02Price: monthlyPacketTotalData.section02PriceTotal,
+        section03Price: monthlyPacketTotalData.section03PriceTotal,
+        section04Price: monthlyPacketTotalData.section04PriceTotal,
+        section05Price: monthlyPacketTotalData.section05PriceTotal,
+
         subTotal: monthlyPacketTotalData.subTotal,
       };
     } else {
@@ -280,10 +298,19 @@ function DailyReportTable({
         returnPackets: packetTotalData.returnPackets,
         totalPrice: packetTotalData.totalPrice,
         totalReturnPrice: packetTotalData.totalReturnPrice,
+
         section01Total: packetTotalData?.section01Total,
         section02Total: packetTotalData.section02Total,
+        section03Total: packetTotalData.section03Total,
+        section04Total: packetTotalData.section04Total,
+        section05Total: packetTotalData.section05Total,
+
         section01Price: packetTotalData.section01PriceTotal,
         section02Price: packetTotalData.section02PriceTotal,
+        section03Price: packetTotalData.section03PriceTotal,
+        section04Price: packetTotalData.section03PriceTotal,
+        section05Price: packetTotalData.section04PriceTotal,
+
         subTotal: packetTotalData.subTotal,
       };
     }
@@ -457,36 +484,95 @@ function DailyReportTable({
       >
         <Stack display={"flex"} flexDirection={isMobile ? "column" : "row"}>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2">
-              Section 01 Packets:{" "}
-              <Box component="span" sx={{ fontSize: "1rem" }}>
-                {allTotal?.section01Total}
-              </Box>
-            </Typography>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 01 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section01Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 01 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section01Price}
+                </Box>
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 02 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section02Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 02 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section02Price}
+                </Box>
+              </Typography>
+            </Box>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2">
-              Section 01 Price:{" "}
-              <Box component="span" sx={{ fontSize: "1rem" }}>
-                {allTotal?.section01Price}
-              </Box>
-            </Typography>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 03 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section03Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 03 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section03Price}
+                </Box>
+              </Typography>
+            </Box>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2">
-              Section 02 Packets:{" "}
-              <Box component="span" sx={{ fontSize: "1rem" }}>
-                {allTotal?.section02Total}
-              </Box>
-            </Typography>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 04 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section04Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 04 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section04Price}
+                </Box>
+              </Typography>
+            </Box>
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="subtitle2">
-              Section 02 Price:{" "}
-              <Box component="span" sx={{ fontSize: "1rem" }}>
-                {allTotal?.section02Price}
-              </Box>
-            </Typography>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 05 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section05Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 05 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section05Price}
+                </Box>
+              </Typography>
+            </Box>
           </Box>
         </Stack>
       </Box>
