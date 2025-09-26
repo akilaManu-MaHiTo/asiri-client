@@ -26,6 +26,9 @@ import ApexBarChart from "../components/ApexBarChart";
 import AirlineStopsOutlinedIcon from "@mui/icons-material/AirlineStopsOutlined";
 import LooksOneOutlinedIcon from "@mui/icons-material/LooksOneOutlined";
 import LooksTwoOutlinedIcon from "@mui/icons-material/LooksTwoOutlined";
+import Looks3OutlinedIcon from '@mui/icons-material/Looks3Outlined';
+import Looks4OutlinedIcon from '@mui/icons-material/Looks4Outlined';
+import Looks5OutlinedIcon from '@mui/icons-material/Looks5Outlined';
 import KeyboardReturnOutlinedIcon from "@mui/icons-material/KeyboardReturnOutlined";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import CustomPieChart from "../components/CustomPieChart";
@@ -65,10 +68,19 @@ function SalesDashboard() {
       returnPackets: packetTotalData.returnPackets,
       totalPrice: packetTotalData.totalPrice,
       totalReturnPrice: packetTotalData.totalReturnPrice,
+
       section01Total: packetTotalData.section01Total,
       section02Total: packetTotalData.section02Total,
+      section03Total: packetTotalData.section03Total,
+      section04Total: packetTotalData.section04Total,
+      section05Total: packetTotalData.section05Total,
+
       section01Price: packetTotalData.section01PriceTotal,
       section02Price: packetTotalData.section02PriceTotal,
+      section03Price: packetTotalData.section03PriceTotal,
+      section04Price: packetTotalData.section04PriceTotal,
+      section05Price: packetTotalData.section05PriceTotal,
+
       subTotal: packetTotalData.subTotal,
     };
   }, [packetTotalData]);
@@ -79,8 +91,12 @@ function SalesDashboard() {
     return [
       { name: "Total Packets", value: packetTotalData.totalPackets },
       { name: "Return Packets", value: packetTotalData.returnPackets },
+
       { name: "Section 01 Packets", value: packetTotalData.section01Total },
       { name: "Section 02 Packets", value: packetTotalData.section02Total },
+      { name: "Section 03 Packets", value: packetTotalData.section03Total },
+      { name: "Section 04 Packets", value: packetTotalData.section04Total },
+      { name: "Section 05 Packets", value: packetTotalData.section05Total },
     ];
   }, [packetTotalData]);
 
@@ -274,6 +290,63 @@ function SalesDashboard() {
             title="Section 02 Total Packets"
             titleIcon={<LooksTwoOutlinedIcon fontSize="small" />}
             value={allTotal?.section02Total || 0}
+            subDescription=""
+          />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flex: 1,
+            margin: "0.5rem",
+            minWidth: "150px",
+          }}
+        >
+          <DashboardCard
+            title="Section 03 Total Packets"
+            titleIcon={<Looks3OutlinedIcon fontSize="small" />}
+            value={allTotal?.section03Total || 0}
+            subDescription=""
+          />
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            flex: 1,
+            margin: "0.5rem",
+            minWidth: "150px",
+          }}
+        >
+          <DashboardCard
+            title="Section 04 Total Packets"
+            titleIcon={<Looks4OutlinedIcon fontSize="small" />}
+            value={allTotal?.section04Total || 0}
+            subDescription=""
+          />
+        </Box>
+        
+        
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          marginTop: "1rem",
+          flexDirection: isMobile || isTablet ? "column" : "row",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flex: 1,
+            margin: "0.5rem",
+            minWidth: "150px",
+          }}
+        >
+          <DashboardCard
+            title="Section 05 Total Packets"
+            titleIcon={<Looks5OutlinedIcon fontSize="small" />}
+            value={allTotal?.section05Total || 0}
             subDescription=""
           />
         </Box>
