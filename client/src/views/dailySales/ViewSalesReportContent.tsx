@@ -279,7 +279,7 @@ function ViewSalesReportContent({
             <Box flex={1}>
               <DrawerContentItem
                 label="Section 05 Packets"
-                value={dailySales?.section02}
+                value={dailySales?.section05}
               />
               <DrawerContentItem
                 label="Section 05 Packets Price"
