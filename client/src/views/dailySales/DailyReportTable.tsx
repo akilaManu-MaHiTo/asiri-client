@@ -263,9 +263,9 @@ function DailyReportTable({
 
         section01Price: dailyPacketTotalData.section01PriceTotal,
         section02Price: dailyPacketTotalData.section02PriceTotal,
-        section03Price: dailyPacketTotalData.section02PriceTotal,
-        section04Price: dailyPacketTotalData.section02PriceTotal,
-        section05Price: dailyPacketTotalData.section02PriceTotal,
+        section03Price: dailyPacketTotalData.section03PriceTotal,
+        section04Price: dailyPacketTotalData.section04PriceTotal,
+        section05Price: dailyPacketTotalData.section05PriceTotal,
 
         subTotal: dailyPacketTotalData.subTotal,
       };
@@ -308,8 +308,8 @@ function DailyReportTable({
         section01Price: packetTotalData.section01PriceTotal,
         section02Price: packetTotalData.section02PriceTotal,
         section03Price: packetTotalData.section03PriceTotal,
-        section04Price: packetTotalData.section03PriceTotal,
-        section05Price: packetTotalData.section04PriceTotal,
+        section04Price: packetTotalData.section04PriceTotal,
+        section05Price: packetTotalData.section05PriceTotal,
 
         subTotal: packetTotalData.subTotal,
       };
@@ -680,6 +680,15 @@ function DailyReportTable({
                         </Typography>
                         <Typography variant="body2">
                           Section 02: {row.section02 || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          Section 03: {row.section03 || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          Section 04: {row.section04 || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          Section 05: {row.section05 || 0}
                         </Typography>
                       </Stack>
                     </TableCell>
