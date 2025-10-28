@@ -1,0 +1,769 @@
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Alert,
+  Box,
+  Button,
+  LinearProgress,
+  Stack,
+  TableFooter,
+  TablePagination,
+  Theme,
+  Typography,
+  useMediaQuery,
+} from "@mui/material";
+import theme from "../../theme";
+import PageTitle from "../../components/PageTitle";
+import Breadcrumb from "../../components/BreadCrumb";
+import { useMemo, useState } from "react";
+import ViewDataDrawer, { DrawerHeader } from "../../components/ViewDataDrawer";
+import AddIcon from "@mui/icons-material/Add";
+import { format } from "date-fns";
+import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
+import { useSnackbar } from "notistack";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import queryClient from "../../state/queryClient";
+import {
+  createPackets,
+  deletePacket,
+  getDailyPacketReport,
+  getDailyPacketTotal,
+  getMonthlyPacketReport,
+  getMonthlyPacketTotal,
+  getPacketList,
+  getPacketTotal,
+  Sales,
+  updatePacket,
+} from "../../api/salesApi";
+// import AddOrEditSalesReportDialog from "./AddOrEditSalesReportDialog";
+import { dateFormatter } from "../../util/dateFormat.util";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Controller, useForm } from "react-hook-form";
+import DatePickerComponent from "../../components/DatePickerComponent";
+import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
+import { generateMonthlySalesPDF } from "../../util/pdfGenerator";
+// import ViewSalesReportContent from "./ViewSalesReportContent";
+function DailyReportTable({
+  isDailyReport,
+  isMonthlyReport,
+}: {
+  isDailyReport: boolean;
+  isMonthlyReport: boolean;
+}) {
+  const { enqueueSnackbar } = useSnackbar();
+  const [openViewDrawer, setOpenViewDrawer] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<Sales>(null);
+  const [openAddOrEditDialog, setOpenAddOrEditDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const {
+    register,
+    watch,
+    reset,
+    control,
+    formState: { errors },
+  } = useForm();
+
+  const handleChangePage = (
+    event: React.MouseEvent<HTMLButtonElement> | null,
+    newPage: number
+  ) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const breadcrumbItems = [
+    { title: "Home", href: "/home" },
+    {
+      title: `${
+        isDailyReport ? "Daily " : isMonthlyReport ? " Monthly " : ""
+      }Material Summary Management`,
+    },
+  ];
+
+  let beforeFormatDate = watch("date") || new Date();
+  beforeFormatDate = new Date(beforeFormatDate);
+  const formattedDate = dateFormatter(beforeFormatDate);
+
+  //packet details
+  const { data: packetData, isFetching: isPacketDataFetching } = useQuery({
+    queryKey: ["packets"],
+    queryFn: getPacketList,
+  });
+
+  const { data: dailyPacketData, isFetching: isPacketAssignedTaskData } =
+    useQuery({
+      queryKey: ["packet-daily-sales", formattedDate],
+      queryFn: () => getDailyPacketReport(formattedDate),
+    });
+
+  const { data: monthlyPacketData, isFetching: isPacketApprovedTaskData } =
+    useQuery({
+      queryKey: ["packet-monthly-sales", formattedDate],
+      queryFn: () => getMonthlyPacketReport(formattedDate),
+    });
+
+  //packet total details
+  const { data: packetTotalData } = useQuery({
+    queryKey: ["packet-total"],
+    queryFn: getPacketTotal,
+  });
+
+  const { data: dailyPacketTotalData } = useQuery({
+    queryKey: ["daily-packet-total", formattedDate],
+    queryFn: () => getDailyPacketTotal(formattedDate),
+  });
+
+  const { data: monthlyPacketTotalData } = useQuery({
+    queryKey: ["monthly-packet-total", formattedDate],
+    queryFn: () => getMonthlyPacketTotal(formattedDate),
+  });
+
+  const isMobile = useMediaQuery((theme: Theme) =>
+    theme.breakpoints.down("md")
+  );
+
+  //create packet
+  const { mutate: createPacketMutation, isPending: isPacketCreating } =
+    useMutation({
+      mutationFn: createPackets,
+      onSuccess: () => {
+        setSelectedRow(null);
+        setOpenViewDrawer(false);
+        setOpenAddOrEditDialog(false);
+        queryClient.invalidateQueries({ queryKey: ["packets"] });
+        queryClient.invalidateQueries({
+          queryKey: ["daily-packet-total", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["monthly-packet-total", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-monthly-sales", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-daily-sales", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-total"],
+        });
+        enqueueSnackbar("Daily Sales Report Created Successfully!", {
+          variant: "success",
+        });
+      },
+      onError: (error: any) => {
+        const errorMessage =
+          error?.data?.message || error?.message || "Packet Creation Failed";
+
+        enqueueSnackbar(errorMessage, {
+          variant: "error",
+        });
+      },
+    });
+
+  //update packet
+  const { mutate: updatePacketMutation, isPending: isPacketUpdating } =
+    useMutation({
+      mutationFn: updatePacket,
+      onSuccess: () => {
+        setSelectedRow(null);
+        setOpenViewDrawer(false);
+        setOpenAddOrEditDialog(false);
+        queryClient.invalidateQueries({ queryKey: ["packets"] });
+        queryClient.invalidateQueries({
+          queryKey: ["daily-packet-total", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["monthly-packet-total", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-monthly-sales", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-daily-sales", formattedDate],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["packet-total"],
+        });
+        enqueueSnackbar("Daily Sales Report Update Successfully!", {
+          variant: "success",
+        });
+      },
+      onError: () => {
+        enqueueSnackbar(`Daily Sales Report Update Failed`, {
+          variant: "error",
+        });
+      },
+    });
+
+  //delete packet
+  const { mutate: deletePacketMutation } = useMutation({
+    mutationFn: deletePacket,
+    onSuccess: () => {
+      setSelectedRow(null);
+      setOpenViewDrawer(false);
+      setOpenAddOrEditDialog(false);
+      queryClient.invalidateQueries({ queryKey: ["packets"] });
+      queryClient.invalidateQueries({
+        queryKey: ["daily-packet-total", formattedDate],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["monthly-packet-total", formattedDate],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["packet-monthly-sales", formattedDate],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["packet-daily-sales", formattedDate],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["packet-total"],
+      });
+      enqueueSnackbar("Daily Sales Report Delete Successfully!", {
+        variant: "success",
+      });
+    },
+    onError: () => {
+      enqueueSnackbar(`Daily Sales Report Delete Failed`, {
+        variant: "error",
+      });
+    },
+  });
+
+  const allTotal = useMemo(() => {
+    if (isDailyReport) {
+      if (!dailyPacketTotalData) return null;
+      return {
+        totalPackets: dailyPacketTotalData.totalPackets,
+        returnPackets: dailyPacketTotalData.returnPackets,
+        totalPrice: dailyPacketTotalData.totalPrice,
+        totalReturnPrice: dailyPacketTotalData.totalReturnPrice,
+
+        section01Total: dailyPacketTotalData.section01Total,
+        section02Total: dailyPacketTotalData.section02Total,
+        section03Total: dailyPacketTotalData.section03Total,
+        section04Total: dailyPacketTotalData.section04Total,
+        section05Total: dailyPacketTotalData.section05Total,
+
+        section01Price: dailyPacketTotalData.section01PriceTotal,
+        section02Price: dailyPacketTotalData.section02PriceTotal,
+        section03Price: dailyPacketTotalData.section03PriceTotal,
+        section04Price: dailyPacketTotalData.section04PriceTotal,
+        section05Price: dailyPacketTotalData.section05PriceTotal,
+
+        subTotal: dailyPacketTotalData.subTotal,
+      };
+    } else if (isMonthlyReport) {
+      if (!monthlyPacketTotalData) return null;
+      return {
+        totalPackets: monthlyPacketTotalData.totalPackets,
+        returnPackets: monthlyPacketTotalData.returnPackets,
+        totalPrice: monthlyPacketTotalData.totalPrice,
+        totalReturnPrice: monthlyPacketTotalData.totalReturnPrice,
+
+        section01Total: monthlyPacketTotalData.section01Total,
+        section02Total: monthlyPacketTotalData.section02Total,
+        section03Total: monthlyPacketTotalData.section03Total,
+        section04Total: monthlyPacketTotalData.section04Total,
+        section05Total: monthlyPacketTotalData.section05Total,
+
+        section01Price: monthlyPacketTotalData.section01PriceTotal,
+        section02Price: monthlyPacketTotalData.section02PriceTotal,
+        section03Price: monthlyPacketTotalData.section03PriceTotal,
+        section04Price: monthlyPacketTotalData.section04PriceTotal,
+        section05Price: monthlyPacketTotalData.section05PriceTotal,
+
+        subTotal: monthlyPacketTotalData.subTotal,
+      };
+    } else {
+      if (!packetTotalData) return null;
+      return {
+        totalPackets: packetTotalData.totalPackets,
+        returnPackets: packetTotalData.returnPackets,
+        totalPrice: packetTotalData.totalPrice,
+        totalReturnPrice: packetTotalData.totalReturnPrice,
+
+        section01Total: packetTotalData?.section01Total,
+        section02Total: packetTotalData.section02Total,
+        section03Total: packetTotalData.section03Total,
+        section04Total: packetTotalData.section04Total,
+        section05Total: packetTotalData.section05Total,
+
+        section01Price: packetTotalData.section01PriceTotal,
+        section02Price: packetTotalData.section02PriceTotal,
+        section03Price: packetTotalData.section03PriceTotal,
+        section04Price: packetTotalData.section04PriceTotal,
+        section05Price: packetTotalData.section05PriceTotal,
+
+        subTotal: packetTotalData.subTotal,
+      };
+    }
+  }, [
+    packetTotalData,
+    monthlyPacketTotalData,
+    dailyPacketTotalData,
+    isDailyReport,
+    isMonthlyReport,
+  ]);
+
+  const paginatedPacketData = useMemo(() => {
+    if (isDailyReport) {
+      if (!dailyPacketData) return [];
+      if (rowsPerPage === -1) {
+        return dailyPacketData;
+      }
+      return dailyPacketData.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      );
+    } else if (isMonthlyReport) {
+      if (!monthlyPacketData) return [];
+      if (rowsPerPage === -1) {
+        return monthlyPacketData;
+      }
+      return monthlyPacketData.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      );
+    } else {
+      if (!packetData) return [];
+      if (rowsPerPage === -1) {
+        return packetData;
+      }
+      return packetData.slice(
+        page * rowsPerPage,
+        page * rowsPerPage + rowsPerPage
+      );
+    }
+  }, [
+    packetData,
+    page,
+    rowsPerPage,
+    dailyPacketData,
+    monthlyPacketData,
+    isDailyReport,
+    isMonthlyReport,
+  ]);
+
+  return (
+    <Stack>
+      <Box
+        sx={{
+          padding: theme.spacing(2),
+          boxShadow: 2,
+          marginY: 2,
+          borderRadius: 1,
+          overflowX: "hidden",
+        }}
+      >
+        <PageTitle
+          title={`${
+            isDailyReport ? "Daily " : isMonthlyReport ? "Monthly " : ""
+          }Material Summary Management`}
+        />
+        <Breadcrumb breadcrumbs={breadcrumbItems} />
+      </Box>
+      {(isDailyReport || isMonthlyReport) && (
+        <Accordion sx={{ marginBottom: 2, borderRadius: 1 }}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1-content"
+            id="panel1-header"
+            sx={{
+              borderBottom: "1px solid var(--pallet-lighter-grey)",
+            }}
+          >
+            <Typography variant="subtitle2">Select Filters</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box width={isMobile ? "100%" : "25%"}>
+              <Controller
+                control={control}
+                {...register("date", { required: true })}
+                name={"date"}
+                render={({ field }) => {
+                  return (
+                    <DatePickerComponent
+                      onChange={(e) => field.onChange(e)}
+                      value={field.value ? new Date(field.value) : undefined}
+                      error={errors?.date ? "Required" : ""}
+                      disablePast={false}
+                      disableFuture={true}
+                    />
+                  );
+                }}
+              />
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                onClick={() => {
+                  reset();
+                }}
+                sx={{ color: "var(--button-color)", marginRight: "0.5rem" }}
+              >
+                Reset
+              </Button>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      )}
+      
+      <Box
+        sx={{
+          padding: theme.spacing(2),
+          boxShadow: 2,
+          marginBottom: 2,
+          borderRadius: 1,
+          overflowX: "hidden",
+        }}
+      >
+        <Stack display={"flex"} flexDirection={isMobile ? "column" : "row"}>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 01 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section01Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 01 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section01Price}
+                </Box>
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 02 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section02Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 02 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section02Price}
+                </Box>
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 03 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section03Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 03 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section03Price}
+                </Box>
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 04 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section04Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 04 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section04Price}
+                </Box>
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 05 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section05Total}
+                </Box>
+              </Typography>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 05 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {allTotal?.section05Price}
+                </Box>
+              </Typography>
+            </Box>
+          </Box>
+        </Stack>
+      </Box>
+
+      <Stack sx={{ alignItems: "center" }}>
+        <TableContainer
+          component={Paper}
+          elevation={2}
+          sx={{
+            overflowX: "auto",
+            maxWidth: isMobile ? "88vw" : "100%",
+          }}
+        >
+          <Stack
+            flexDirection={isMobile ? "column" : "row"}
+            sx={{ alignItems: "center", justifyContent: "flex-end" }}
+          >
+            <Box
+              sx={{
+                padding: theme.spacing(2),
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: "var(--app-headers)" }}
+                startIcon={<DownloadOutlinedIcon />}
+                onClick={() =>
+                  generateMonthlySalesPDF(
+                    isDailyReport
+                      ? dailyPacketData
+                      : isMonthlyReport
+                      ? monthlyPacketData
+                      : packetData
+                  )
+                }
+              >
+                Report Download
+              </Button>
+            </Box>
+            <Box
+              sx={{
+                padding: theme.spacing(2),
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: "var(--button-color)" }}
+                startIcon={<AddIcon />}
+                onClick={() => {
+                  setSelectedRow(null);
+                  setOpenAddOrEditDialog(true);
+                }}
+              >
+                Add Sales Report
+              </Button>
+            </Box>
+          </Stack>
+
+          {(isPacketDataFetching ||
+            isPacketAssignedTaskData ||
+            isPacketApprovedTaskData) && (
+            <LinearProgress
+              sx={{ width: "100%", color: "var(--secondary-color)" }}
+            />
+          )}
+          <Table aria-label="simple table">
+            <TableHead sx={{ backgroundColor: "var(--app-headers)" }}>
+              <TableRow>
+                <TableCell align="center">Date</TableCell>
+                <TableCell align="right">No Of Packets</TableCell>
+                <TableCell align="right">No Of Returns</TableCell>
+                <TableCell align="right">Section Packets</TableCell>
+                <TableCell align="right">Unit Price</TableCell>
+                <TableCell align="right">Market Name</TableCell>
+                <TableCell align="right">Sub Total Price</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {paginatedPacketData?.length > 0 ? (
+                paginatedPacketData?.map((row) => (
+                  <TableRow
+                    key={`${row._id}`}
+                    sx={{
+                      "&:last-child td, &:last-child th": { border: 0 },
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      setSelectedRow(row);
+                      setOpenViewDrawer(true);
+                    }}
+                  >
+                    <TableCell align="center">
+                      {format(row.date, "yyyy-MM-dd")}
+                    </TableCell>
+                    <TableCell align="right">{row.noOfPackets}</TableCell>
+                    <TableCell align="right">{row.noOfReturnPackets}</TableCell>
+                    <TableCell align="right">
+                      <Stack>
+                        <Typography variant="body2">
+                          Section 01: {row.section01 || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          Section 02: {row.section02 || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          Section 03: {row.section03 || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          Section 04: {row.section04 || 0}
+                        </Typography>
+                        <Typography variant="body2">
+                          Section 05: {row.section05 || 0}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+                    <TableCell align="right">{row.unitPrice}</TableCell>
+                    <TableCell align="right">{row.marketName}</TableCell>
+                    <TableCell align="right">
+                      {row.totalPrice - row.totalReturnPrice}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={11} align="center">
+                    <Typography variant="body2">No Records found</Typography>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+            <TableFooter>
+              <TableRow>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
+                  colSpan={100}
+                  count={
+                    isDailyReport
+                      ? dailyPacketData?.length
+                      : isMonthlyReport
+                      ? monthlyPacketData?.length
+                      : packetData?.length
+                  }
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  showFirstButton={true}
+                  showLastButton={true}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </TableContainer>
+      </Stack>
+      <ViewDataDrawer
+        open={openViewDrawer}
+        handleClose={() => setOpenViewDrawer(false)}
+        fullScreen={true}
+        drawerContent={
+          <Stack spacing={1} sx={{ paddingX: theme.spacing(1) }}>
+            <DrawerHeader
+              title="Sales Details"
+              handleClose={() => setOpenViewDrawer(false)}
+              onEdit={() => {
+                setSelectedRow(selectedRow);
+                setOpenAddOrEditDialog(true);
+              }}
+              onDelete={() => setDeleteDialogOpen(true)}
+            />
+
+            {selectedRow && (
+              <Stack>
+                {/* <ViewSalesReportContent
+                  dailySales={selectedRow}
+                  handleCloseDrawer={() => setOpenViewDrawer(false)}
+                /> */}
+              </Stack>
+            )}
+          </Stack>
+        }
+      />
+      {/* {openAddOrEditDialog && (
+        <AddOrEditSalesReportDialog
+          open={openAddOrEditDialog}
+          handleClose={() => {
+            setSelectedRow(null);
+            setOpenViewDrawer(false);
+            setOpenAddOrEditDialog(false);
+          }}
+          onSubmit={(data) => {
+            if (selectedRow) {
+              updatePacketMutation(data);
+            } else {
+              createPacketMutation(data);
+            }
+          }}
+          defaultValues={selectedRow}
+          isLoading={isPacketCreating || isPacketUpdating}
+        />
+      )} */}
+      {deleteDialogOpen && (
+        <DeleteConfirmationModal
+          open={deleteDialogOpen}
+          title="Remove Sales Report Confirmation"
+          content={
+            <>
+              Are you sure you want to remove this Sales Report?
+              <Alert severity="warning" style={{ marginTop: "1rem" }}>
+                This action is not reversible.
+              </Alert>
+            </>
+          }
+          handleClose={() => setDeleteDialogOpen(false)}
+          deleteFunc={async () => {
+            deletePacketMutation(selectedRow._id);
+          }}
+          onSuccess={() => {
+            setOpenViewDrawer(false);
+            setSelectedRow(null);
+            setDeleteDialogOpen(false);
+          }}
+          handleReject={() => {
+            setOpenViewDrawer(false);
+            setSelectedRow(null);
+            setDeleteDialogOpen(false);
+          }}
+        />
+      )}
+    </Stack>
+  );
+}
+
+export default DailyReportTable;

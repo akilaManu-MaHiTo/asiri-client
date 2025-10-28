@@ -9,6 +9,9 @@ const HomePage = React.lazy(() => import("./views/HomePage"));
 const DailyReportTable = React.lazy(
   () => import("./views/dailySales/DailyReportTable")
 );
+const MaterialRequestTable = React.lazy((
+  () => import("./views/material/MaterialRequestTable")
+))
 
 const ProtectedRoute = () => {
   const { user, status } = useCurrentUser();
@@ -61,6 +64,10 @@ const AppRoutes = () => {
           element={withLayout(MainLayout, () => (
             <DailyReportTable isDailyReport={false} isMonthlyReport={true} />
           ))}
+        />
+        <Route
+          path="/material/material-request"
+          element={withLayout(MainLayout, MaterialRequestTable)}
         />
       </Route>
     </Routes>
