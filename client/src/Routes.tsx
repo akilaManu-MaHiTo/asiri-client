@@ -7,9 +7,11 @@ import MainLayout from "./components/layout/MainLayout";
 const LoginPage = React.lazy(() => import("./views/loginPage/Login"));
 const HomePage = React.lazy(() => import("./views/HomePage"));
 const DailyReportTable = React.lazy(
-  () => import("./views/dailySales/DailyReportTable")
-);
-
+  () => import("./views/dailySales/DailyReportTable"));
+const MaterialRequestTable = React.lazy(
+  () => import("./views/material/MaterialRequestTable"));
+const StockBalanceTable = React.lazy(
+  () => import("./views/material/StockBalanceTable"));
 const ProtectedRoute = () => {
   const { user, status } = useCurrentUser();
 
@@ -62,6 +64,14 @@ const AppRoutes = () => {
             <DailyReportTable isDailyReport={false} isMonthlyReport={true} />
           ))}
         />
+         <Route
+          path="/material/material-request"
+          element={withLayout(MainLayout,MaterialRequestTable )}
+          />
+        <Route
+          path="/material/stock-balance"
+          element={withLayout(MainLayout,StockBalanceTable )}
+          />
       </Route>
     </Routes>
   );
