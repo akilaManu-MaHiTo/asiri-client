@@ -166,18 +166,24 @@ function SalesDashboard() {
     "Nov",
     "Dec",
   ];
-  const sectionColors = ["#FF9999", "#FF6666", "#FF0000", "#B20000", "#800000"];
+  const sectionColors = [
+    "#1F77B4", // blue
+    "#FF7F0E", // orange
+    "#2CA02C", // green
+    "#D62728", // red
+    "#9467BD", // purple
+  ];
 
   const chartDataSectionWise = useMemo(() => {
     const months = sectionWiseTotal?.monthly || [];
 
     return months.map((m) => ({
       month: MONTH_NAMES[(m.month || 1) - 1] || String(m.month),
-      section01: m.sections.section01 || 0,
-      section02: m.sections.section02 || 0,
-      section03: m.sections.section03 || 0,
-      section04: m.sections.section04 || 0,
-      section05: m.sections.section05 || 0,
+      section01: m?.section01 || 0,
+      section02: m?.section02 || 0,
+      section03: m?.section03 || 0,
+      section04: m?.section04 || 0,
+      section05: m?.section05 || 0,
     }));
   }, [sectionWiseTotal]);
   type BarSeries = {
