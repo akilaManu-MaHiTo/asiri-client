@@ -5,6 +5,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  LinearProgress,
   Stack,
   TextField,
   Typography,
@@ -432,6 +433,11 @@ function SalesDashboard() {
             </Typography>
           </Box>
           <Box sx={{ margin: "1.5rem" }}>
+            {isSectionWiseTotalLoading && (
+              <LinearProgress
+                sx={{ width: "100%", color: "var(--secondary-color)" }}
+              />
+            )}
             <Accordion>
               <AccordionSummary
                 expandIcon={<ExpandMoreIcon />}
