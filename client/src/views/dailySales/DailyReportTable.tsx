@@ -12,6 +12,7 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   LinearProgress,
   Stack,
   TableFooter,
@@ -267,6 +268,8 @@ function DailyReportTable({
         section04Price: dailyPacketTotalData.section04PriceTotal,
         section05Price: dailyPacketTotalData.section05PriceTotal,
 
+        groupArray: dailyPacketTotalData.groupedByGroupNo,
+
         subTotal: dailyPacketTotalData.subTotal,
       };
     } else if (isMonthlyReport) {
@@ -289,6 +292,8 @@ function DailyReportTable({
         section04Price: monthlyPacketTotalData.section04PriceTotal,
         section05Price: monthlyPacketTotalData.section05PriceTotal,
 
+        groupArray: monthlyPacketTotalData.groupedByGroupNo,
+
         subTotal: monthlyPacketTotalData.subTotal,
       };
     } else {
@@ -310,6 +315,8 @@ function DailyReportTable({
         section03Price: packetTotalData.section03PriceTotal,
         section04Price: packetTotalData.section04PriceTotal,
         section05Price: packetTotalData.section05PriceTotal,
+
+        groupArray: packetTotalData.groupedByGroupNo,
 
         subTotal: packetTotalData.subTotal,
       };
@@ -482,6 +489,9 @@ function DailyReportTable({
           overflowX: "hidden",
         }}
       >
+        <Box sx={{ marginBottom: isMobile ? 2 : 1 }}>
+          <Chip label={`All Count`} color="error" />
+        </Box>
         <Stack display={"flex"} flexDirection={isMobile ? "column" : "row"}>
           <Box sx={{ flex: 1 }}>
             <Box sx={{ flex: 1 }}>
@@ -577,6 +587,100 @@ function DailyReportTable({
         </Stack>
       </Box>
 
+      {allTotal?.groupArray?.map((group) => (
+        <Box
+          key={group._id}
+          sx={{
+            padding: theme.spacing(2),
+            boxShadow: 2,
+            marginBottom: 2,
+            borderRadius: 1,
+            overflowX: "hidden",
+          }}
+        >
+          <Box sx={{ marginBottom: isMobile ? 2 : 1 }}>
+            <Chip label={`Group No: ${group._id}`} color="error" />
+          </Box>
+          <Stack display="flex" flexDirection={isMobile ? "column" : "row"}>
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 01 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section01Total}
+                </Box>
+              </Typography>
+
+              <Typography variant="subtitle2">
+                Section 01 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section01PriceTotal}
+                </Box>
+              </Typography>
+            </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 02 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section02Total}
+                </Box>
+              </Typography>
+              <Typography variant="subtitle2">
+                Section 02 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section02PriceTotal}
+                </Box>
+              </Typography>
+            </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 03 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section03Total}
+                </Box>
+              </Typography>
+              <Typography variant="subtitle2">
+                Section 03 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section03PriceTotal}
+                </Box>
+              </Typography>
+            </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 04 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section04Total}
+                </Box>
+              </Typography>
+              <Typography variant="subtitle2">
+                Section 04 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section04PriceTotal}
+                </Box>
+              </Typography>
+            </Box>
+
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="subtitle2">
+                Section 05 Packets:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section05Total}
+                </Box>
+              </Typography>
+              <Typography variant="subtitle2">
+                Section 05 Price:{" "}
+                <Box component="span" sx={{ fontSize: "1rem" }}>
+                  {group.section05PriceTotal}
+                </Box>
+              </Typography>
+            </Box>
+          </Stack>
+        </Box>
+      ))}
+
       <Stack sx={{ alignItems: "center" }}>
         <TableContainer
           component={Paper}
@@ -647,6 +751,7 @@ function DailyReportTable({
               <TableRow>
                 <TableCell align="center">Date</TableCell>
                 <TableCell align="right">No Of Packets</TableCell>
+                <TableCell align="right">Group No</TableCell>
                 <TableCell align="right">No Of Returns</TableCell>
                 <TableCell align="right">Section Packets</TableCell>
                 <TableCell align="right">Unit Price</TableCell>
@@ -672,6 +777,7 @@ function DailyReportTable({
                       {format(row.date, "yyyy-MM-dd")}
                     </TableCell>
                     <TableCell align="right">{row.noOfPackets}</TableCell>
+                    <TableCell align="right">{row.groupNo}</TableCell>
                     <TableCell align="right">{row.noOfReturnPackets}</TableCell>
                     <TableCell align="right">
                       <Stack>

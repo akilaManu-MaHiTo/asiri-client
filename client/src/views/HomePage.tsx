@@ -2,9 +2,11 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Autocomplete,
   Box,
   Button,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import theme from "../theme";
@@ -14,24 +16,40 @@ import { Controller, useForm } from "react-hook-form";
 import useIsMobile from "../customHooks/useIsMobile";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DashboardCard from "../components/DashboardCard";
-import { useMemo, useState } from "react";
+import { use, useMemo, useState } from "react";
 import ExtensionOutlinedIcon from "@mui/icons-material/ExtensionOutlined";
 import { useQuery } from "@tanstack/react-query";
 import { getPacketTotal } from "../api/salesApi";
-import { ResponsiveContainer } from "recharts";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import DatePickerComponent from "../components/DatePickerComponent";
 import { dateFormatter } from "../util/dateFormat.util";
-import { getPacketMonthlySummery } from "../api/packetDashboard";
+import {
+  getPacketMonthlySummery,
+  getPacketSectionSummery,
+  yearData,
+} from "../api/packetDashboard";
 import ApexBarChart from "../components/ApexBarChart";
 import AirlineStopsOutlinedIcon from "@mui/icons-material/AirlineStopsOutlined";
 import LooksOneOutlinedIcon from "@mui/icons-material/LooksOneOutlined";
 import LooksTwoOutlinedIcon from "@mui/icons-material/LooksTwoOutlined";
-import Looks3OutlinedIcon from '@mui/icons-material/Looks3Outlined';
-import Looks4OutlinedIcon from '@mui/icons-material/Looks4Outlined';
-import Looks5OutlinedIcon from '@mui/icons-material/Looks5Outlined';
+import Looks3OutlinedIcon from "@mui/icons-material/Looks3Outlined";
+import Looks4OutlinedIcon from "@mui/icons-material/Looks4Outlined";
+import Looks5OutlinedIcon from "@mui/icons-material/Looks5Outlined";
 import KeyboardReturnOutlinedIcon from "@mui/icons-material/KeyboardReturnOutlined";
 import AttachMoneyOutlinedIcon from "@mui/icons-material/AttachMoneyOutlined";
 import CustomPieChart from "../components/CustomPieChart";
+import CustomButton from "../components/CustomButton";
+import { getGrouplist } from "../api/groupApi";
+import SectionApexStackedBarDisplay from "../components/SectionApexStackedBarDisplay";
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
   { title: "Sales Management" },
@@ -45,6 +63,7 @@ function SalesDashboard() {
     reset,
     control,
     formState: { errors },
+    handleSubmit,
   } = useForm();
 
   let beforeFormatDate = watch("date") || new Date();
@@ -60,6 +79,21 @@ function SalesDashboard() {
   const { data: packetTotalData } = useQuery({
     queryKey: ["packet-total"],
     queryFn: getPacketTotal,
+  });
+  const selectedGroupNo = watch("group");
+  const selectedYear = watch("year") || formattedYear;
+  const {
+    data: sectionWiseTotal,
+    refetch: refetchSectionWiseTotal,
+    isLoading: isSectionWiseTotalLoading,
+  } = useQuery({
+    queryKey: ["packet-section-total", selectedGroupNo, selectedYear],
+    queryFn: () => getPacketSectionSummery(selectedGroupNo, selectedYear),
+  });
+
+  const { data: groupListData } = useQuery({
+    queryKey: ["group"],
+    queryFn: getGrouplist,
   });
   const allTotal = useMemo(() => {
     if (!packetTotalData) return null;
@@ -118,8 +152,69 @@ function SalesDashboard() {
       monthlyPacketData.dec.totalPackets,
     ];
   }, [monthlyPacketData]);
+  const MONTH_NAMES = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const sectionColors = ["#FF9999", "#FF6666", "#FF0000", "#B20000", "#800000"];
 
-  // const handleFetch = () => {};
+  const chartDataSectionWise = useMemo(() => {
+    const months = sectionWiseTotal?.monthly || [];
+
+    return months.map((m) => ({
+      month: MONTH_NAMES[(m.month || 1) - 1] || String(m.month),
+      section01: m.sections.section01 || 0,
+      section02: m.sections.section02 || 0,
+      section03: m.sections.section03 || 0,
+      section04: m.sections.section04 || 0,
+      section05: m.sections.section05 || 0,
+    }));
+  }, [sectionWiseTotal]);
+  type BarSeries = {
+    name: string;
+    data: number[];
+  }[];
+  type Payload = {
+    series: BarSeries;
+    categories: string[];
+  };
+  const payload = useMemo(() => {
+    if (!chartDataSectionWise || chartDataSectionWise.length === 0) {
+      return { series: [], categories: [] } as Payload;
+    }
+    const categories = chartDataSectionWise.map((r) => r.month);
+    const first = chartDataSectionWise[0];
+    const sectionKeys = Object.keys(first).filter((k) => k !== "month");
+    const series = sectionKeys.map((key) => ({
+      name: key,
+      data: chartDataSectionWise.map((r) => Number(r[key] ?? 0)),
+    }));
+
+    return { series, categories };
+  }, [chartDataSectionWise]);
+
+  const labelGroupNo = useMemo(() => {
+    if (!sectionWiseTotal?.groupNo) return "0";
+    return sectionWiseTotal?.groupNo;
+  }, [sectionWiseTotal]);
+  const labelYear = useMemo(() => {
+    if (!sectionWiseTotal?.year) return "0";
+    return sectionWiseTotal?.year;
+  }, [sectionWiseTotal]);
+
+  const handleFetch = () => {
+    refetchSectionWiseTotal();
+  };
 
   return (
     <Stack>
@@ -135,84 +230,6 @@ function SalesDashboard() {
         <PageTitle title="Sales Management Dashboard" />
         <Breadcrumb breadcrumbs={breadcrumbItems} />
       </Box>
-
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1-content"
-          id="panel1-header"
-          sx={{
-            borderBottom: "1px solid var(--pallet-lighter-grey)",
-          }}
-        >
-          <Typography variant="subtitle2">Dashboard Filters</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              marginTop: "0.5rem",
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                flex: 1,
-                minWidth: "250px",
-              }}
-            >
-              <Controller
-                control={control}
-                {...register("date", { required: true })}
-                name={"date"}
-                render={({ field }) => {
-                  return (
-                    <DatePickerComponent
-                      onChange={(e) => field.onChange(e)}
-                      value={field.value ? new Date(field.value) : undefined}
-                      error={errors?.date ? "Required" : ""}
-                      disablePast={false}
-                      disableFuture={true}
-                    />
-                  );
-                }}
-              />
-            </Box>
-          </Box>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: "0.5rem",
-              marginX: "0.5rem",
-            }}
-          >
-            <Button
-              onClick={() => {
-                reset();
-                console.log("reset");
-              }}
-              sx={{ color: "var(--button-color)", marginRight: "0.5rem" }}
-            >
-              Reset
-            </Button>
-            {/* <CustomButton
-              variant="contained"
-              sx={{
-                backgroundColor: "var(--button-color)",
-              }}
-              size="medium"
-              onClick={handleSubmit((data) => {
-                handleFetch();
-                console.log("data", data);
-              })}
-            >
-              Add Filter
-            </CustomButton> */}
-          </Box>
-        </AccordionDetails>
-      </Accordion>
 
       <Box
         sx={{
@@ -232,7 +249,7 @@ function SalesDashboard() {
           }}
         >
           <DashboardCard
-            title="Monthly Total Packets"
+            title="All Total Packets"
             titleIcon={<ExtensionOutlinedIcon fontSize="small" />}
             value={allTotal?.totalPackets || 0}
             subDescription=""
@@ -247,7 +264,7 @@ function SalesDashboard() {
           }}
         >
           <DashboardCard
-            title="Monthly Total Return Packets"
+            title="All Total Return Packets"
             titleIcon={<AirlineStopsOutlinedIcon fontSize="small" />}
             value={allTotal?.returnPackets || 0}
             subDescription=""
@@ -323,8 +340,6 @@ function SalesDashboard() {
             subDescription=""
           />
         </Box>
-        
-        
       </Box>
       <Box
         sx={{
@@ -359,7 +374,7 @@ function SalesDashboard() {
           }}
         >
           <DashboardCard
-            title="Monthly Total Amount"
+            title="All Total Amount"
             titleIcon={<AttachMoneyOutlinedIcon fontSize="small" />}
             value={"Rs." + allTotal?.subTotal || 0}
             subDescription=""
@@ -374,12 +389,170 @@ function SalesDashboard() {
           }}
         >
           <DashboardCard
-            title="Monthly Return Amount"
+            title="All Return Amount"
             titleIcon={<KeyboardReturnOutlinedIcon fontSize="small" />}
             value={"Rs." + allTotal?.totalReturnPrice || 0}
             subDescription=""
           />
         </Box>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: "1rem",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            height: "auto",
+            marginTop: "1rem",
+            flex: 2,
+            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+            padding: "1rem",
+            borderRadius: "0.3rem",
+            border: "1px solid var(--primary-light)",
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{
+                textAlign: "center",
+              }}
+            >
+              {labelGroupNo} Section Summary For {labelYear}
+            </Typography>
+          </Box>
+          <Box sx={{ margin: "1.5rem" }}>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="panel1-content"
+                id="panel1-header"
+                sx={{
+                  borderBottom: "1px solid var(--pallet-lighter-grey)",
+                }}
+              >
+                <Typography variant="subtitle2">Filter</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    marginTop: "0,5rem",
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flex: 1,
+                      minWidth: "250px",
+                    }}
+                  >
+                    <Autocomplete
+                      {...register("group", { required: false })}
+                      size="small"
+                      options={groupListData?.map((group) => group.name)}
+                      sx={{ flex: 1, margin: "0.5rem" }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          error={!!errors.group}
+                          label="Group No"
+                          name="group"
+                        />
+                      )}
+                    />
+
+                    <Autocomplete
+                      {...register("year", { required: false })}
+                      size="small"
+                      options={
+                        yearData?.length
+                          ? yearData.map((year) => year.year)
+                          : []
+                      }
+                      sx={{ flex: 1, margin: "0.5rem" }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          required
+                          error={!!errors.group}
+                          label="Select Year"
+                          name="year"
+                        />
+                      )}
+                    />
+                  </Box>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginTop: "0.5rem",
+                    marginX: "0.5rem",
+                  }}
+                >
+                  <Button
+                    onClick={() => {
+                      reset();
+                      console.log("reset");
+                    }}
+                    sx={{ color: "var(--button-color)", marginRight: "0.5rem" }}
+                  >
+                    Reset
+                  </Button>
+                  <CustomButton
+                    variant="contained"
+                    sx={{
+                      backgroundColor: "var(--button-color)",
+                    }}
+                    size="medium"
+                    onClick={handleSubmit((data) => {
+                      handleFetch();
+                      console.log("data", data);
+                    })}
+                  >
+                    Add Filter
+                  </CustomButton>
+                </Box>
+              </AccordionDetails>
+            </Accordion>
+          </Box>
+          <ResponsiveContainer width="100%" height={500}>
+            <Box>
+              <SectionApexStackedBarDisplay
+                payload={payload}
+                colors={sectionColors}
+              />
+            </Box>
+          </ResponsiveContainer>
+        </Box>
+
+        {/* <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            flex: 1,
+            flexDirection: "column",
+            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+            borderRadius: "0.3rem",
+            border: "1px solid var(--primary-light)",
+            padding: "1rem",
+            height: "auto",
+            marginTop: "1rem",
+          }}
+        >
+          <ResponsiveContainer width="100%" height={500}>
+            <Box display="flex" justifyContent="center">
+              <CustomPieChart data={chartData} title="Packet Summary" />
+            </Box>
+          </ResponsiveContainer>
+        </Box> */}
       </Box>
       <Box
         sx={{
