@@ -71,11 +71,12 @@ function SalesDashboard() {
   beforeFormatDate = new Date(beforeFormatDate);
   const formattedDate = dateFormatter(beforeFormatDate);
   const formattedYear = beforeFormatDate.getFullYear();
+  const monthlySummaryYear = watch("summaryYear") || formattedYear;
 
   const { data: monthlyPacketData, isFetching: isMonthlyPacketDataFetching } =
     useQuery({
-      queryKey: ["monthly-packet-summary", formattedYear],
-      queryFn: () => getPacketMonthlySummery(formattedYear),
+      queryKey: ["monthly-packet-summary", monthlySummaryYear],
+      queryFn: () => getPacketMonthlySummery(monthlySummaryYear),
     });
   const { data: packetTotalData } = useQuery({
     queryKey: ["packet-total"],
@@ -595,6 +596,84 @@ function SalesDashboard() {
               {formattedYear} Monthly Packet Summary
             </Typography>
           </Box>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1-content"
+              id="panel1-header"
+              sx={{
+                borderBottom: "1px solid var(--pallet-lighter-grey)",
+              }}
+            >
+              <Typography variant="subtitle2">Filter</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  marginTop: "0,5rem",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    flex: 1,
+                    minWidth: "250px",
+                  }}
+                >
+                  <Autocomplete
+                    {...register("summaryYear", { required: false })}
+                    size="small"
+                    options={
+                      yearData?.length ? yearData.map((year) => year.year) : []
+                    }
+                    sx={{ flex: 1, margin: "0.5rem" }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        required
+                        error={!!errors.group}
+                        label="Select Year"
+                        name="summaryYear"
+                      />
+                    )}
+                  />
+                </Box>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginTop: "0.5rem",
+                  marginX: "0.5rem",
+                }}
+              >
+                <Button
+                  onClick={() => {
+                    reset();
+                    console.log("reset");
+                  }}
+                  sx={{ color: "var(--button-color)", marginRight: "0.5rem" }}
+                >
+                  Reset
+                </Button>
+                <CustomButton
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "var(--button-color)",
+                  }}
+                  size="medium"
+                  onClick={handleSubmit((data) => {
+                    handleFetch();
+                    console.log("data", data);
+                  })}
+                >
+                  Add Filter
+                </CustomButton>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
           <ResponsiveContainer width="100%" height={500}>
             <Box>
               <ApexBarChart
