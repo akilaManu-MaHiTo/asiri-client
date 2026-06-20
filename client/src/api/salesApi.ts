@@ -67,6 +67,26 @@ export async function getMonthlyPacketReport(date: String) {
   return res.data;
 }
 
+export async function getEachDayPacketSummary(year: String, month: any) {
+  const res = await axios.get(`/api/packet/daily-summary-graph/${year}/${month.value}`);
+  return res.data;
+}
+
+export interface PacketByMarketResponse {
+  year: number;
+  month: number;
+  labels: string[];
+  data: number[];
+  summary?: Array<{
+    marketName: string;
+    totalPackets: number;
+  }>;
+}
+
+export async function getPacketByMarket(year: String, month: any) {
+  const res = await axios.get(`/api/packet/market-count/${year}/${month.value}`);
+  return res.data as PacketByMarketResponse;
+}
 export async function getAccidentsList() {
   const res = await axios.get("/api/accidents");
   return res.data;

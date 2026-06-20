@@ -388,7 +388,7 @@ const DrawerContent = ({
           if (item?.headline) {
             return (
               <Typography
-                key={item.headline}
+                key={`headline-${item.headline}-${i}`}
                 variant="body2"
                 sx={{
                   color: "var(--text-light)",
@@ -407,7 +407,7 @@ const DrawerContent = ({
             return (
               <Box
                 sx={{ marginLeft: "1rem" }}
-                key={`${item.href} +${item.title}`}
+                key={`nested-${item.href ?? item.title}-${i}`}
               >
                 <NestedItem
                   item={item}
@@ -419,7 +419,7 @@ const DrawerContent = ({
           }
           return (
             <ListItem
-              key={item.accessKey}
+              key={`item-${item.href ?? item.title ?? i}-${i}`}
               disableGutters
               sx={{ paddingY: "3px", marginLeft: "1rem" }}
             >
@@ -517,7 +517,7 @@ const NestedItem = React.memo(
     if (isAllItemsHidden) return null;
 
     return (
-      <React.Fragment key={item.accessKey}>
+      <React.Fragment key={`nested-fragment-${item.href ?? item.title}`}>
         <Button
           onClick={() => setOpen((o) => !o)}
           endIcon={open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -550,12 +550,15 @@ const NestedItem = React.memo(
         </Button>
         <Collapse in={open} unmountOnExit>
           <List>
-            {item.nestedItems.map((item) => {
+            {item.nestedItems.map((item, nestedIndex) => {
               if (item?.accessKey && false) return null;
 
               if (item.nestedItems) {
                 return (
-                  <Box key={item.accessKey} sx={{ marginLeft: "0.5rem" }}>
+                  <Box
+                    key={`nested-box-${item.href ?? item.title ?? nestedIndex}`}
+                    sx={{ marginLeft: "0.5rem" }}
+                  >
                     <NestedItem
                       item={item}
                       handleDrawerClose={handleDrawerClose}
@@ -568,7 +571,7 @@ const NestedItem = React.memo(
               return (
                 <ListItem
                   disableGutters
-                  key={item.accessKey}
+                  key={`nested-item-${item.href ?? item.title ?? nestedIndex}`}
                   sx={{ paddingY: "3px", marginLeft: "0.5rem" }}
                 >
                   <LinkButton
