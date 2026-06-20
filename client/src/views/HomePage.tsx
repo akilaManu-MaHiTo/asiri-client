@@ -20,13 +20,12 @@ import DashboardCard from "../components/DashboardCard";
 import { use, useMemo, useState } from "react";
 import ExtensionOutlinedIcon from "@mui/icons-material/ExtensionOutlined";
 import { useQuery } from "@tanstack/react-query";
-import { getPacketTotal } from "../api/salesApi";
+import { getEachDayPacketSummary, getPacketByMarket, getPacketTotal } from "../api/salesApi";
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Legend,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -36,6 +35,7 @@ import { dateFormatter } from "../util/dateFormat.util";
 import {
   getPacketMonthlySummery,
   getPacketSectionSummery,
+  MonthData,
   yearData,
 } from "../api/packetDashboard";
 import ApexBarChart from "../components/ApexBarChart";
@@ -51,6 +51,7 @@ import CustomPieChart from "../components/CustomPieChart";
 import CustomButton from "../components/CustomButton";
 import { getGrouplist } from "../api/groupApi";
 import SectionApexStackedBarDisplay from "../components/SectionApexStackedBarDisplay";
+import ApexLineChart from "../components/ApexLineChart";
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
   { title: "Sales Management" },
@@ -92,6 +93,76 @@ function SalesDashboard() {
     queryKey: ["packet-section-total", selectedGroupNo, selectedYear],
     queryFn: () => getPacketSectionSummery(selectedGroupNo, selectedYear),
   });
+  const nowMonth = new Date().getMonth() + 1;
+  const myMonth = watch("selectMonth") || nowMonth;
+  const monthValue = MonthData.find((m) => m.value === String(nowMonth));
+  const selectedMonth = watch("selectMonth") || monthValue;
+  const selectedMonthData = useMemo(() => {
+    if (
+      selectedMonth &&
+      typeof selectedMonth === "object" &&
+      "value" in selectedMonth
+    ) {
+      return selectedMonth;
+    }
+
+    if (typeof selectedMonth === "string") {
+      return MonthData.find((month) => month.month === selectedMonth) || monthValue;
+    }
+
+    return monthValue;
+  }, [monthValue, selectedMonth]);
+  const selectYear = watch("selectYear") || formattedYear;
+  const { data: eachDayPacketSummary } = useQuery({
+    queryKey: [
+      "each-day-packet-summary",
+      selectYear,
+      selectedMonthData?.value,
+    ],
+    queryFn: () => getEachDayPacketSummary(selectYear, selectedMonthData),
+  });
+
+  const dailySummaryChart = useMemo(() => {
+    const summary = eachDayPacketSummary?.summary ?? [];
+
+    return {
+      categories: summary.map((item: { day: number }) => String(item.day)),
+      data: summary.map(
+        (item: { totalPackets: number }) => Number(item.totalPackets ?? 0)
+      ),
+    };
+  }, [eachDayPacketSummary]);
+
+  const marketMonth = watch("marketMonth") || nowMonth;
+  const marketMonthValue = MonthData.find((m) => m.value === String(nowMonth));
+  const selectedMarketMonth = watch("marketMonth") || marketMonthValue;
+  const selectedMarketMonthData = useMemo(() => {
+    if (
+      selectedMarketMonth &&
+      typeof selectedMarketMonth === "object" &&
+      "value" in selectedMarketMonth
+    ) {
+      return selectedMarketMonth;
+    }
+    if (typeof selectedMarketMonth === "string") {
+      return MonthData.find((month) => month.month === selectedMarketMonth) || marketMonthValue;
+    }
+    return marketMonthValue;
+  }, [marketMonthValue, selectedMarketMonth]);
+  const marketYear = watch("marketYear") || formattedYear;
+  const { data: packetByMarket } = useQuery({
+    queryKey: ["packet-by-market", marketYear, selectedMarketMonthData?.value],
+    queryFn: () => getPacketByMarket(marketYear, selectedMarketMonthData),
+  });
+
+  const packetByMarketChart = useMemo(() => {
+    return {
+      categories: packetByMarket?.labels ?? [],
+      data: packetByMarket?.data ?? [],
+    };
+  }, [packetByMarket]);
+
+
 
   const { data: groupListData } = useQuery({
     queryKey: ["group"],
@@ -451,19 +522,20 @@ function SalesDashboard() {
                 <Typography variant="subtitle2">Filter</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <Box
+                <Stack
                   sx={{
                     display: "flex",
                     flexWrap: "wrap",
                     marginTop: "0,5rem",
                   }}
                 >
-                  <Box
+                  <Stack
                     sx={{
                       display: "flex",
                       flex: 1,
                       minWidth: "250px",
                     }}
+                    flexDirection={isMobile ? "column" : "row"}
                   >
                     <Autocomplete
                       {...register("group", { required: false })}
@@ -500,8 +572,8 @@ function SalesDashboard() {
                         />
                       )}
                     />
-                  </Box>
-                </Box>
+                  </Stack>
+                </Stack>
                 <Box
                   sx={{
                     display: "flex",
@@ -536,14 +608,12 @@ function SalesDashboard() {
               </AccordionDetails>
             </Accordion>
           </Box>
-          <ResponsiveContainer width="100%" height={500}>
-            <Box>
-              <SectionApexStackedBarDisplay
-                payload={payload}
-                colors={sectionColors}
-              />
-            </Box>
-          </ResponsiveContainer>
+          <Box sx={{ width: "100%", height: 500 }}>
+            <SectionApexStackedBarDisplay
+              payload={payload}
+              colors={sectionColors}
+            />
+          </Box>
         </Box>
 
         {/* <Box
@@ -674,15 +744,13 @@ function SalesDashboard() {
               </Box>
             </AccordionDetails>
           </Accordion>
-          <ResponsiveContainer width="100%" height={500}>
-            <Box>
-              <ApexBarChart
-                title="Monthly Packet Summary"
-                seriesName="Total Packets"
-                data={monthlyData}
-              />
-            </Box>
-          </ResponsiveContainer>
+          <Box sx={{ width: "100%", height: 500 }}>
+            <ApexBarChart
+              title="Monthly Packet Summary"
+              seriesName="Total Packets"
+              data={monthlyData}
+            />
+          </Box>
         </Box>
 
         <Box
@@ -699,11 +767,303 @@ function SalesDashboard() {
             marginTop: "1rem",
           }}
         >
-          <ResponsiveContainer width="100%" height={500}>
-            <Box display="flex" justifyContent="center">
-              <CustomPieChart data={chartData} title="Packet Summary" />
-            </Box>
-          </ResponsiveContainer>
+          <Box sx={{ width: "100%", height: 500, display: "flex", justifyContent: "center" }}>
+            <CustomPieChart data={chartData} title="Packet Summary" />
+          </Box>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: "1rem",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            height: "auto",
+            marginTop: "1rem",
+            flex: 2,
+            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+            padding: "1rem",
+            borderRadius: "0.3rem",
+            border: "1px solid var(--primary-light)",
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{
+                textAlign: "center",
+              }}
+            >
+              {selectYear} {myMonth.month} Daily Packet Total
+            </Typography>
+          </Box>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1-content"
+              id="panel1-header"
+              sx={{
+                borderBottom: "1px solid var(--pallet-lighter-grey)",
+              }}
+            >
+              <Typography variant="subtitle2">Filter</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  marginTop: "0,5rem",
+                  flexDirection: isMobile ? "column" : "row",
+                }}
+              >
+                <Stack
+                  sx={{
+                    display: "flex",
+                    flex: 1,
+                    minWidth: "250px",
+                  }}
+                  flexDirection={isMobile ? "column" : "row"}
+                >
+                  <Autocomplete
+                    {...register("selectYear", { required: false })}
+                    size="small"
+                    options={
+                      yearData?.length ? yearData.map((year) => year.year) : []
+                    }
+                    sx={{ flex: 1, margin: "0.5rem" }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        required
+                        error={!!errors.group}
+                        label="Select Year"
+                        name="selectYear"
+                      />
+                    )}
+                  />
+
+                  <Autocomplete
+                    {...register("selectMonth", { required: false })}
+                    size="small"
+                    options={
+                      MonthData?.length
+                        ? MonthData.map((month) => month.month)
+                        : []
+                    }
+                    sx={{ flex: 1, margin: "0.5rem" }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        required
+                        error={!!errors.group}
+                        label="Select Month"
+                        name="selectMonth"
+                      />
+                    )}
+                  />
+                </Stack>
+              </Stack>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginTop: "0.5rem",
+                  marginX: "0.5rem",
+                }}
+              >
+                <Button
+                  onClick={() => {
+                    reset();
+                    console.log("reset");
+                  }}
+                  sx={{ color: "var(--button-color)", marginRight: "0.5rem" }}
+                >
+                  Reset
+                </Button>
+                <CustomButton
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "var(--button-color)",
+                  }}
+                  size="medium"
+                  onClick={handleSubmit((data) => {
+                    handleFetch();
+                    console.log("data", data);
+                  })}
+                >
+                  Add Filter
+                </CustomButton>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+          <Box sx={{ width: "100%", height: 500 }}>
+            <ApexLineChart
+              seriesName="Total Packets"
+              categories={dailySummaryChart.categories}
+              data={dailySummaryChart.data}
+            />
+          </Box>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: "1rem",
+        }}
+      >
+        <Box
+          sx={{
+            width: "100%",
+            height: "auto",
+            marginTop: "1rem",
+            flex: 2,
+            boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+            padding: "1rem",
+            borderRadius: "0.3rem",
+            border: "1px solid var(--primary-light)",
+          }}
+        >
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{
+                textAlign: "center",
+              }}
+            >
+              {selectYear} {myMonth.month} Daily Packet Total
+            </Typography>
+          </Box>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="panel1-content"
+              id="panel1-header"
+              sx={{
+                borderBottom: "1px solid var(--pallet-lighter-grey)",
+              }}
+            >
+              <Typography variant="subtitle2">Filter</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Stack
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  marginTop: "0,5rem",
+                  flexDirection: isMobile ? "column" : "row",
+                }}
+              >
+                <Stack
+                  sx={{
+                    display: "flex",
+                    flex: 1,
+                    minWidth: "250px",
+                  }}
+                  flexDirection={isMobile ? "column" : "row"}
+                >
+                  <Controller
+                    name="marketYear"
+                    control={control}
+                    render={({ field }) => (
+                      <Autocomplete
+                        {...field}
+                        value={field.value ?? null}
+                        onChange={(_, value) => field.onChange(value ?? "")}
+                        size="small"
+                        options={
+                          yearData?.length ? yearData.map((year) => year.year) : []
+                        }
+                        sx={{ flex: 1, margin: "0.5rem" }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            required
+                            error={!!errors.group}
+                            label="Select Year"
+                            name="selectYear"
+                          />
+                        )}
+                      />
+                    )}
+                  />
+
+                  <Controller
+                    name="marketMonth"
+                    control={control}
+                    render={({ field }) => (
+                      <Autocomplete
+                        {...field}
+                        value={field.value ?? null}
+                        onChange={(_, value) => field.onChange(value ?? "")}
+                        size="small"
+                        options={
+                          MonthData?.length
+                            ? MonthData.map((month) => month.month)
+                            : []
+                        }
+                        sx={{ flex: 1, margin: "0.5rem" }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            required
+                            error={!!errors.group}
+                            label="Select Month"
+                            name="selectMonth"
+                          />
+                        )}
+                      />
+                    )}
+                  />
+                </Stack>
+              </Stack>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  marginTop: "0.5rem",
+                  marginX: "0.5rem",
+                }}
+              >
+                <Button
+                  onClick={() => {
+                    reset();
+                    console.log("reset");
+                  }}
+                  sx={{ color: "var(--button-color)", marginRight: "0.5rem" }}
+                >
+                  Reset
+                </Button>
+                <CustomButton
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "var(--button-color)",
+                  }}
+                  size="medium"
+                  onClick={handleSubmit((data) => {
+                    handleFetch();
+                    console.log("data", data);
+                  })}
+                >
+                  Add Filter
+                </CustomButton>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+          <Box sx={{ width: "100%", height: 500 }}>
+            <ApexBarChart
+              title={`${marketYear} ${selectedMarketMonthData?.month || ""} Market Summary`}
+              seriesName="Total Packets"
+              categories={packetByMarketChart.categories}
+              data={packetByMarketChart.data}
+            />
+          </Box>
         </Box>
       </Box>
     </Stack>
