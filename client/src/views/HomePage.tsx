@@ -48,7 +48,6 @@ import {
   MonthData,
   yearData,
 } from "../api/packetDashboard";
-import ApexBarChart from "../components/ApexBarChart";
 import AirlineStopsOutlinedIcon from "@mui/icons-material/AirlineStopsOutlined";
 import LooksOneOutlinedIcon from "@mui/icons-material/LooksOneOutlined";
 import LooksTwoOutlinedIcon from "@mui/icons-material/LooksTwoOutlined";
@@ -62,6 +61,8 @@ import CustomButton from "../components/CustomButton";
 import { getGrouplist } from "../api/groupApi";
 import SectionApexStackedBarDisplay from "../components/SectionApexStackedBarDisplay";
 import ApexLineChart from "../components/ApexLineChart";
+import ApexBarChart from "../components/ApexBarChart";
+import { formatCurrency } from "../util/curencyFormat.util";
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
   { title: "Sales Management" },
@@ -166,10 +167,37 @@ function SalesDashboard() {
     queryFn: () => getPacketByMarket(marketYear, selectedMarketMonthData),
   });
 
-  const packetByMarketChart = useMemo(() => {
+  const packetByMarketStackedPayload = useMemo(() => {
+    const summary = packetByMarket?.summary ?? [];
+
+    if (summary.length > 0) {
+      return {
+        categories: summary.map((item) => item.marketName),
+        series: [
+          {
+            name: "Total Packets",
+            data: summary.map((item) => Number(item.totalPackets ?? 0)),
+          },
+          {
+            name: "Return Packets",
+            data: summary.map((item) => Number(item.returnPackets ?? 0)),
+          },
+        ],
+      };
+    }
+
     return {
       categories: packetByMarket?.labels ?? [],
-      data: packetByMarket?.data ?? [],
+      series: [
+        {
+          name: "Total Packets",
+          data: packetByMarket?.data ?? [],
+        },
+        {
+          name: "Return Packets",
+          data: packetByMarket?.returnData ?? Array(packetByMarket?.data?.length ?? 0).fill(0),
+        },
+      ],
     };
   }, [packetByMarket]);
 
@@ -464,7 +492,7 @@ function SalesDashboard() {
           <DashboardCard
             title="All Total Amount"
             titleIcon={<AttachMoneyOutlinedIcon fontSize="small" />}
-            value={"Rs." + allTotal?.subTotal || 0}
+            value={formatCurrency(allTotal?.subTotal)}
             subDescription=""
           />
         </Box>
@@ -479,7 +507,7 @@ function SalesDashboard() {
           <DashboardCard
             title="All Return Amount"
             titleIcon={<KeyboardReturnOutlinedIcon fontSize="small" />}
-            value={"Rs." + allTotal?.totalReturnPrice || 0}
+            value={formatCurrency(allTotal?.totalReturnPrice)}
             subDescription=""
           />
         </Box>
@@ -1153,11 +1181,10 @@ function SalesDashboard() {
             </AccordionDetails>
           </Accordion>
           <Box sx={{ width: "100%", height: 500 }}>
-            <ApexBarChart
-              title={`${marketYear} ${selectedMarketMonthData?.month || ""} Market Summary`}
-              seriesName="Total Packets"
-              categories={packetByMarketChart.categories}
-              data={packetByMarketChart.data}
+            <SectionApexStackedBarDisplay
+              payload={packetByMarketStackedPayload}
+              colors={["#D62728", "#000000"]}
+              showValues
             />
           </Box>
         </Box>

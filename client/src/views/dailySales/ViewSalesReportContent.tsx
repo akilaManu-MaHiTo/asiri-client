@@ -18,6 +18,7 @@ import useCurrentUser from "../../hooks/useCurrentUser";
 import { Sales } from "../../api/salesApi";
 import KeyboardReturnOutlinedIcon from "@mui/icons-material/KeyboardReturnOutlined";
 import LooksOneOutlinedIcon from "@mui/icons-material/LooksOneOutlined";
+import { formatCurrency } from "../../util/curencyFormat.util";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -211,11 +212,11 @@ function ViewSalesReportContent({
               />
               <DrawerContentItem
                 label="Unit Price"
-                value={dailySales.unitPrice}
+                value={formatCurrency(dailySales.unitPrice)}
               />
               <DrawerContentItem
                 label="Total Price"
-                value={dailySales.totalPrice.toFixed(2)}
+                value={formatCurrency(dailySales.totalPrice)}
               />
             </Box>
             <Box flex={1}>
@@ -225,11 +226,11 @@ function ViewSalesReportContent({
               />
               <DrawerContentItem
                 label="Sales Price"
-                value={dailySales.salesPrice}
+                value={formatCurrency(dailySales.salesPrice)}
               />
               <DrawerContentItem
                 label="Sales Total Price"
-                value={dailySales.salesTotalPrice.toFixed(2)}
+                value={formatCurrency(dailySales.salesTotalPrice)}
               />
             </Box>
           </Stack>
@@ -243,7 +244,7 @@ function ViewSalesReportContent({
               />
               <DrawerContentItem
                 label="Section 01 Packets Price"
-                value={dailySales?.section01Price?.toFixed(2) || "0"}
+                value={formatCurrency(dailySales?.section01Price) || "0"}
               />
             </Box>
             <Box flex={1}>
@@ -253,7 +254,7 @@ function ViewSalesReportContent({
               />
               <DrawerContentItem
                 label="Section 02 Packets Price"
-                value={dailySales?.section02Price?.toFixed(2) || "0"}
+                value={formatCurrency(dailySales?.section02Price) || "0"}
               />
             </Box>
             <Box flex={1}>
@@ -263,7 +264,7 @@ function ViewSalesReportContent({
               />
               <DrawerContentItem
                 label="Section 03 Packets Price"
-                value={dailySales?.section03Price?.toFixed(2) || "0"}
+                value={formatCurrency(dailySales?.section03Price) || "0"}
               />
             </Box>
             <Box flex={1}>
@@ -273,7 +274,7 @@ function ViewSalesReportContent({
               />
               <DrawerContentItem
                 label="Section 04 Packets Price"
-                value={dailySales?.section04Price?.toFixed(2) || "0"}
+                value={formatCurrency(dailySales?.section04Price) || "0"}
               />
             </Box>
             <Box flex={1}>
@@ -283,7 +284,7 @@ function ViewSalesReportContent({
               />
               <DrawerContentItem
                 label="Section 05 Packets Price"
-                value={dailySales?.section05Price?.toFixed(2) || "0"}
+                value={formatCurrency(dailySales?.section05Price) || "0"}
               />
             </Box>
           </Stack>
@@ -295,7 +296,7 @@ function ViewSalesReportContent({
           />
           <DrawerContentItem
             label="Return Packet Cost"
-            value={dailySales.totalReturnPrice.toFixed(2)}
+            value={formatCurrency(dailySales.totalReturnPrice)}
           />
         </TabPanel>
       </Box>
@@ -315,8 +316,8 @@ function ViewSalesReportContent({
       >
         <DrawerContentItem
           label="Sub Total"
-          value={(dailySales.totalPrice - dailySales.totalReturnPrice).toFixed(
-            2
+          value={formatCurrency(
+            dailySales.totalPrice - dailySales.totalReturnPrice,
           )}
         />
       </Box>
