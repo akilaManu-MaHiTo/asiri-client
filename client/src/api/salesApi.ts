@@ -77,9 +77,11 @@ export interface PacketByMarketResponse {
   month: number;
   labels: string[];
   data: number[];
+  returnData?: number[];
   summary?: Array<{
     marketName: string;
     totalPackets: number;
+    returnPackets: number;
   }>;
 }
 
