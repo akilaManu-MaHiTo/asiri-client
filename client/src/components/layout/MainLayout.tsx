@@ -345,7 +345,7 @@ const DrawerContent = ({
 
   //   console.log(userPermissionObject);
 
-  const versionData = useQuery({
+  const { data: gitVersionData } = useQuery({
     queryKey: ["appVersion"],
     queryFn: getLatestVersion,
   });
@@ -491,7 +491,7 @@ const DrawerContent = ({
               letterSpacing: "0.08em",
             }}
           >
-            App Version {versionData.data?.tag_name ?? "N/A"}
+            App Version {gitVersionData?.tagName ?? "N/A"}
           </Typography>
         </Box>
       </Box>
