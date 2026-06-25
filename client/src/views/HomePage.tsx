@@ -62,6 +62,7 @@ import CustomButton from "../components/CustomButton";
 import { getGrouplist } from "../api/groupApi";
 import SectionApexStackedBarDisplay from "../components/SectionApexStackedBarDisplay";
 import ApexLineChart from "../components/ApexLineChart";
+import { formatCurrency } from "../util/curencyFormat.util";
 const breadcrumbItems = [
   { title: "Home", href: "/home" },
   { title: "Sales Management" },
@@ -464,7 +465,7 @@ function SalesDashboard() {
           <DashboardCard
             title="All Total Amount"
             titleIcon={<AttachMoneyOutlinedIcon fontSize="small" />}
-            value={"Rs." + allTotal?.subTotal || 0}
+            value={formatCurrency(allTotal?.subTotal)}
             subDescription=""
           />
         </Box>
@@ -479,7 +480,7 @@ function SalesDashboard() {
           <DashboardCard
             title="All Return Amount"
             titleIcon={<KeyboardReturnOutlinedIcon fontSize="small" />}
-            value={"Rs." + allTotal?.totalReturnPrice || 0}
+            value={formatCurrency(allTotal?.totalReturnPrice)}
             subDescription=""
           />
         </Box>

@@ -52,6 +52,7 @@ import DatePickerComponent from "../../components/DatePickerComponent";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import { generateMonthlySalesPDF } from "../../util/pdfGenerator";
 import ViewSalesReportContent from "./ViewSalesReportContent";
+import { formatCurrency } from "../../util/curencyFormat.util";
 function DailyReportTable({
   isDailyReport,
   isMonthlyReport,
@@ -466,7 +467,7 @@ function DailyReportTable({
             <Typography variant="subtitle2">
               Total Return Price:{" "}
               <Box component="span" sx={{ fontSize: "1rem" }}>
-                {allTotal?.totalReturnPrice}
+                {formatCurrency(allTotal?.totalReturnPrice)}
               </Box>
             </Typography>
           </Box>
@@ -474,7 +475,7 @@ function DailyReportTable({
             <Typography variant="subtitle2">
               Sub Total Price:{" "}
               <Box component="span" sx={{ fontSize: "1rem" }}>
-                {allTotal?.subTotal}
+                {formatCurrency(allTotal?.subTotal)}
               </Box>
             </Typography>
           </Box>
@@ -506,7 +507,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 01 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {allTotal?.section01Price}
+                  {formatCurrency(allTotal?.section01Price)}
                 </Box>
               </Typography>
             </Box>
@@ -525,7 +526,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 02 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {allTotal?.section02Price}
+                  {formatCurrency(allTotal?.section02Price)}
                 </Box>
               </Typography>
             </Box>
@@ -543,7 +544,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 03 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {allTotal?.section03Price}
+                  {formatCurrency(allTotal?.section03Price)}
                 </Box>
               </Typography>
             </Box>
@@ -561,7 +562,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 04 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {allTotal?.section04Price}
+                  {formatCurrency(allTotal?.section04Price)}
                 </Box>
               </Typography>
             </Box>
@@ -579,7 +580,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 05 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {allTotal?.section05Price}
+                  {formatCurrency(allTotal?.section05Price)}
                 </Box>
               </Typography>
             </Box>
@@ -613,7 +614,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 01 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {group.section01PriceTotal}
+                  {formatCurrency(group.section01PriceTotal)}
                 </Box>
               </Typography>
             </Box>
@@ -628,7 +629,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 02 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {group.section02PriceTotal}
+                  {formatCurrency(group.section02PriceTotal)}
                 </Box>
               </Typography>
             </Box>
@@ -643,7 +644,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 03 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {group.section03PriceTotal}
+                  {formatCurrency(group.section03PriceTotal)}
                 </Box>
               </Typography>
             </Box>
@@ -658,7 +659,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 04 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {group.section04PriceTotal}
+                  {formatCurrency(group.section04PriceTotal)}
                 </Box>
               </Typography>
             </Box>
@@ -673,7 +674,7 @@ function DailyReportTable({
               <Typography variant="subtitle2">
                 Section 05 Price:{" "}
                 <Box component="span" sx={{ fontSize: "1rem" }}>
-                  {group.section05PriceTotal}
+                  {formatCurrency(group.section05PriceTotal)}
                 </Box>
               </Typography>
             </Box>
@@ -798,10 +799,10 @@ function DailyReportTable({
                         </Typography>
                       </Stack>
                     </TableCell>
-                    <TableCell align="right">{row.unitPrice}</TableCell>
+                    <TableCell align="right">{formatCurrency(row.unitPrice)}</TableCell>
                     <TableCell align="right">{row.marketName}</TableCell>
                     <TableCell align="right">
-                      {row.totalPrice - row.totalReturnPrice}
+                      {formatCurrency(row.totalPrice - row.totalReturnPrice)}
                     </TableCell>
                   </TableRow>
                 ))
