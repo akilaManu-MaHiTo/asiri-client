@@ -47,6 +47,7 @@ import { useQuery } from "@tanstack/react-query";
 // import { getOrganization } from "../../api/OrganizationSettings/organizationSettingsApi";
 
 import groupLogo from "../../assets/asiri-logo.png";
+import { getLatestVersion } from "../../api/gitHubApi";
 const drawerWidth = 265;
 
 const openedMixin = (theme: Theme): CSSObject => ({
@@ -343,6 +344,11 @@ const DrawerContent = ({
   const { user } = useCurrentUser();
 
   //   console.log(userPermissionObject);
+
+  const versionData = useQuery({
+    queryKey: ["appVersion"],
+    queryFn: getLatestVersion,
+  });
   return (
     <>
       <Box
@@ -485,7 +491,7 @@ const DrawerContent = ({
               letterSpacing: "0.08em",
             }}
           >
-           App Version 1.0.1
+            App Version {versionData.data?.tag_name ?? "N/A"}
           </Typography>
         </Box>
       </Box>
@@ -623,7 +629,7 @@ const NestedItem = React.memo(
         </Collapse>
       </React.Fragment>
     );
-  }
+  },
 );
 
 interface LinkButtonProps {
@@ -665,8 +671,8 @@ export const LinkButton = React.memo(
               color: disabled
                 ? "grey"
                 : isMatch
-                ? "var(--secondary-color)"
-                : "#000000b9",
+                  ? "var(--secondary-color)"
+                  : "#000000b9",
             }}
           >
             {icon}
@@ -678,8 +684,8 @@ export const LinkButton = React.memo(
               color: disabled
                 ? "grey"
                 : isMatch
-                ? "var(--primary-light)"
-                : "#000000b9",
+                  ? "var(--primary-light)"
+                  : "#000000b9",
             }}
           >
             {title}
@@ -687,5 +693,5 @@ export const LinkButton = React.memo(
         </Button>
       </Link>
     );
-  }
+  },
 );
