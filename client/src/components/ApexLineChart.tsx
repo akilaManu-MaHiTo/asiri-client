@@ -30,7 +30,7 @@ const ApexLineChart: React.FC<ApexLineChartProps> = ({
       },
       stroke: {
         curve: "smooth",
-        width: 3,
+        width: 1,
       },
       colors: [strokeColor],
       markers: {

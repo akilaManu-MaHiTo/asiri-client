@@ -7,6 +7,12 @@ import {
   Button,
   LinearProgress,
   Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
@@ -20,7 +26,11 @@ import DashboardCard from "../components/DashboardCard";
 import { use, useMemo, useState } from "react";
 import ExtensionOutlinedIcon from "@mui/icons-material/ExtensionOutlined";
 import { useQuery } from "@tanstack/react-query";
-import { getEachDayPacketSummary, getPacketByMarket, getPacketTotal } from "../api/salesApi";
+import {
+  getEachDayPacketSummary,
+  getPacketByMarket,
+  getPacketTotal,
+} from "../api/salesApi";
 import {
   Bar,
   BarChart,
@@ -107,18 +117,16 @@ function SalesDashboard() {
     }
 
     if (typeof selectedMonth === "string") {
-      return MonthData.find((month) => month.month === selectedMonth) || monthValue;
+      return (
+        MonthData.find((month) => month.month === selectedMonth) || monthValue
+      );
     }
 
     return monthValue;
   }, [monthValue, selectedMonth]);
   const selectYear = watch("selectYear") || formattedYear;
   const { data: eachDayPacketSummary } = useQuery({
-    queryKey: [
-      "each-day-packet-summary",
-      selectYear,
-      selectedMonthData?.value,
-    ],
+    queryKey: ["each-day-packet-summary", selectYear, selectedMonthData?.value],
     queryFn: () => getEachDayPacketSummary(selectYear, selectedMonthData),
   });
 
@@ -127,8 +135,8 @@ function SalesDashboard() {
 
     return {
       categories: summary.map((item: { day: number }) => String(item.day)),
-      data: summary.map(
-        (item: { totalPackets: number }) => Number(item.totalPackets ?? 0)
+      data: summary.map((item: { totalPackets: number }) =>
+        Number(item.totalPackets ?? 0),
       ),
     };
   }, [eachDayPacketSummary]);
@@ -145,7 +153,10 @@ function SalesDashboard() {
       return selectedMarketMonth;
     }
     if (typeof selectedMarketMonth === "string") {
-      return MonthData.find((month) => month.month === selectedMarketMonth) || marketMonthValue;
+      return (
+        MonthData.find((month) => month.month === selectedMarketMonth) ||
+        marketMonthValue
+      );
     }
     return marketMonthValue;
   }, [marketMonthValue, selectedMarketMonth]);
@@ -161,8 +172,6 @@ function SalesDashboard() {
       data: packetByMarket?.data ?? [],
     };
   }, [packetByMarket]);
-
-
 
   const { data: groupListData } = useQuery({
     queryKey: ["group"],
@@ -767,7 +776,14 @@ function SalesDashboard() {
             marginTop: "1rem",
           }}
         >
-          <Box sx={{ width: "100%", height: 500, display: "flex", justifyContent: "center" }}>
+          <Box
+            sx={{
+              width: "100%",
+              height: 500,
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
             <CustomPieChart data={chartData} title="Packet Summary" />
           </Box>
         </Box>
@@ -901,13 +917,91 @@ function SalesDashboard() {
               </Box>
             </AccordionDetails>
           </Accordion>
-          <Box sx={{ width: "100%", height: 500 }}>
-            <ApexLineChart
-              seriesName="Total Packets"
-              categories={dailySummaryChart.categories}
-              data={dailySummaryChart.data}
-            />
-          </Box>
+          <Stack
+            flexDirection={isMobile ? "column" : "row"}
+            justifyContent="space-between"
+            alignItems="center"
+            mt={4}
+            gap={6}
+          >
+            {isMobile && (
+              <Box
+                sx={{
+                  height: 500,
+                  overflow: "auto",
+                  scrollbarWidth: "none",
+                  "&::-webkit-scrollbar": {
+                    display: "none",
+                  },
+                }}
+                width={"100%"}
+              >
+                <Table aria-label="simple table" stickyHeader>
+                  <TableHead sx={{ backgroundColor: "var(--app-headers)" }}>
+                    <TableRow>
+                      <TableCell>Day</TableCell>
+                      <TableCell>Total Packets</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {eachDayPacketSummary?.summary?.map((item: any) => (
+                      <TableRow key={item.day}>
+                        <TableCell>{item.day}</TableCell>
+                        <TableCell>{item.totalPackets}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            )}
+            {!isMobile && (
+              <Box
+                sx={{
+                  height: 500,
+                  overflow: "auto",
+                  scrollbarWidth: "none",
+                  "&::-webkit-scrollbar": {
+                    display: "none",
+                  },
+                }}
+                borderRadius="0.2rem"
+                border="1px solid var(--border-color)"
+              >
+                <Table aria-label="simple table" stickyHeader>
+                  <TableHead sx={{ backgroundColor: "var(--app-headers)" }}>
+                    <TableRow>
+                      <TableCell>Day</TableCell>
+                      <TableCell>Total Packets</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {eachDayPacketSummary?.summary?.map((item: any) => (
+                      <TableRow key={item.day}>
+                        <TableCell>{item.day}</TableCell>
+                        <TableCell>{item.totalPackets}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Box>
+            )}
+            <Box
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                height: 500,
+                overflow: "hidden",
+              }}
+              borderRadius="0.2rem"
+              border="1px solid var(--border-color)"
+            >
+              <ApexLineChart
+                seriesName="Total Packets"
+                categories={dailySummaryChart.categories}
+                data={dailySummaryChart.data}
+              />
+            </Box>
+          </Stack>
         </Box>
       </Box>
 
@@ -937,7 +1031,7 @@ function SalesDashboard() {
                 textAlign: "center",
               }}
             >
-              {selectYear} {myMonth.month} Daily Packet Total
+              {selectYear} {myMonth.month} Packet Total By Market
             </Typography>
           </Box>
           <Accordion>
@@ -978,7 +1072,9 @@ function SalesDashboard() {
                         onChange={(_, value) => field.onChange(value ?? "")}
                         size="small"
                         options={
-                          yearData?.length ? yearData.map((year) => year.year) : []
+                          yearData?.length
+                            ? yearData.map((year) => year.year)
+                            : []
                         }
                         sx={{ flex: 1, margin: "0.5rem" }}
                         renderInput={(params) => (

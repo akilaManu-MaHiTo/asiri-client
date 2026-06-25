@@ -345,114 +345,149 @@ const DrawerContent = ({
   //   console.log(userPermissionObject);
   return (
     <>
-      <DrawerHeader sx={{ justifyContent: "flex-start" }}>
-        <IconButton onClick={handleDrawerClose}>
-          {theme.direction === "rtl" ? (
-            <ChevronLeftIcon
-              sx={{
-                color: "var(--primary-light)",
-              }}
-            />
-          ) : (
-            <ChevronLeftIcon
-              sx={{
-                color: "var(--primary-light)",
-              }}
-            />
-          )}
-        </IconButton>
-
-        <Typography
-          variant="subtitle1"
-          noWrap
-          component="div"
-          sx={{ color: "var(--primary-light)" }}
-        >
-          Asiri Mushrooms
-        </Typography>
-      </DrawerHeader>
-      <Divider
-        sx={{ marginBottom: "1rem", backgroundColor: "var(--secondary-color)" }}
-      />
       <Box
         sx={{
-          height: "calc(100vh - 75px)",
-          overflowY: "auto",
-          paddingLeft: 0,
-          overflowX: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
         }}
       >
-        {sidebarItems.map((item, i) => {
-          if (false) return null;
-
-          if (item?.headline) {
-            return (
-              <Typography
-                key={`headline-${item.headline}-${i}`}
-                variant="body2"
-                sx={{
-                  color: "var(--text-light)",
-                  padding: "0.5rem 1rem",
-                  fontWeight: 600,
-                  textTransform: "uppercase",
-                  marginTop: "0.5rem",
-                }}
-              >
-                {item.headline}
-              </Typography>
-            );
-          }
-
-          if (item.nestedItems) {
-            return (
-              <Box
-                sx={{ marginLeft: "1rem" }}
-                key={`nested-${item.href ?? item.title}-${i}`}
-              >
-                <NestedItem
-                  item={item}
-                  handleDrawerClose={handleDrawerClose}
-                  //   userPermissionObject={true}
+        <Box>
+          <DrawerHeader sx={{ justifyContent: "flex-start" }}>
+            <IconButton onClick={handleDrawerClose}>
+              {theme.direction === "rtl" ? (
+                <ChevronLeftIcon
+                  sx={{
+                    color: "var(--primary-light)",
+                  }}
                 />
-              </Box>
-            );
-          }
-          return (
-            <ListItem
-              key={`item-${item.href ?? item.title ?? i}-${i}`}
-              disableGutters
-              sx={{ paddingY: "3px", marginLeft: "1rem" }}
-            >
-              <LinkButton
-                to={item.href}
-                icon={item.icon}
-                title={item.title}
-                disabled={item.disabled}
-                handleDrawerClose={handleDrawerClose}
-              />
-            </ListItem>
-          );
-        })}
+              ) : (
+                <ChevronLeftIcon
+                  sx={{
+                    color: "var(--primary-light)",
+                  }}
+                />
+              )}
+            </IconButton>
 
-        <Divider
-          sx={{ backgroundColor: "var(--pallet-grey)", marginTop: "1rem" }}
-        />
-        <Button
+            <Typography
+              variant="subtitle1"
+              noWrap
+              component="div"
+              sx={{ color: "var(--primary-light)" }}
+            >
+              Asiri Mushrooms
+            </Typography>
+          </DrawerHeader>
+          <Divider
+            sx={{
+              marginBottom: "1rem",
+              backgroundColor: "var(--secondary-color)",
+            }}
+          />
+        </Box>
+        <Box
           sx={{
-            textTransform: "capitalize",
-            marginLeft: "1rem",
-            marginY: "1rem",
-            color: "var(--primary-light)",
-            width: "90%",
-            justifyContent: "flex-start",
-            paddingLeft: "1rem",
-            borderRadius: "0.5rem",
+            flexGrow: 1,
+            overflowY: "auto",
+            paddingLeft: 0,
+            overflowX: "hidden",
           }}
-          startIcon={<LogoutIcon />}
-          onClick={() => setLogoutDialogOpen(true)}
         >
-          Log Out
-        </Button>
+          {sidebarItems.map((item, i) => {
+            if (false) return null;
+
+            if (item?.headline) {
+              return (
+                <Typography
+                  key={`headline-${item.headline}-${i}`}
+                  variant="body2"
+                  sx={{
+                    color: "var(--text-light)",
+                    padding: "0.5rem 1rem",
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    marginTop: "0.5rem",
+                  }}
+                >
+                  {item.headline}
+                </Typography>
+              );
+            }
+
+            if (item.nestedItems) {
+              return (
+                <Box
+                  sx={{ marginLeft: "1rem" }}
+                  key={`nested-${item.href ?? item.title}-${i}`}
+                >
+                  <NestedItem
+                    item={item}
+                    handleDrawerClose={handleDrawerClose}
+                    //   userPermissionObject={true}
+                  />
+                </Box>
+              );
+            }
+            return (
+              <ListItem
+                key={`item-${item.href ?? item.title ?? i}-${i}`}
+                disableGutters
+                sx={{ paddingY: "3px", marginLeft: "1rem" }}
+              >
+                <LinkButton
+                  to={item.href}
+                  icon={item.icon}
+                  title={item.title}
+                  disabled={item.disabled}
+                  handleDrawerClose={handleDrawerClose}
+                />
+              </ListItem>
+            );
+          })}
+
+          <Divider
+            sx={{ backgroundColor: "var(--pallet-grey)", marginTop: "1rem" }}
+          />
+          <Button
+            sx={{
+              textTransform: "capitalize",
+              marginLeft: "1rem",
+              marginY: "1rem",
+              color: "var(--primary-light)",
+              width: "90%",
+              justifyContent: "flex-start",
+              paddingLeft: "1rem",
+              borderRadius: "0.5rem",
+            }}
+            startIcon={<LogoutIcon />}
+            onClick={() => setLogoutDialogOpen(true)}
+          >
+            Log Out
+          </Button>
+        </Box>
+        <Box
+          sx={{
+            borderTop: "1px solid rgba(255, 255, 255, 0.12)",
+            px: 2,
+            py: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            backgroundColor: "rgba(255, 255, 255, 0.04)",
+          }}
+        >
+          <Typography
+            variant="overline"
+            sx={{
+              color: "#796e6e",
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+            }}
+          >
+           App Version 1.0.1
+          </Typography>
+        </Box>
       </Box>
       {logoutDialogOpen && (
         <DeleteConfirmationModal
